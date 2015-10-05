@@ -12,6 +12,10 @@ function FragColor(options){
 FragColor.prototype = Object.create(Node.prototype);
 FragColor.constructor = FragColor;
 
+FragColor.prototype.getInputVarNames = function(key){
+	return key === 'rgba' ? ['rgba' + this.id] : [];
+};
+
 FragColor.prototype.render = function(){
 	return 'gl_FragColor = ' + this.getInputVarNames('rgba')[0] + ';';
 };

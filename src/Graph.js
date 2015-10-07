@@ -47,6 +47,13 @@ Graph.prototype.inputPortIsConnected = function(node, inputPort){
 	});
 };
 
+Graph.prototype.getNodeConnectedToInputPort = function(node, inputPort){
+	var connection = this.connections.filter(function (conn){
+		return conn.toNode === node && conn.toPortKey === inputPort;
+	})[0];
+	return connection && connection.fromNode;
+};
+
 Graph.prototype.getUniforms = function(){
 	var uniforms = [];
 	this.nodes.forEach(function (node){

@@ -13,7 +13,13 @@ FragColor.prototype = Object.create(Node.prototype);
 FragColor.constructor = FragColor;
 
 FragColor.prototype.getInputVarNames = function(key){
-	return key === 'rgba' ? ['rgba' + this.id] : [];
+	if(key === 'rgba'){
+		// Get the ID of the node connected
+		var connectedNode = this.graph.getNodeConnectedToInputPort(this, key);
+		if(connectedNode)
+			return  ['rgba' + connectedNode.id];
+	}
+	return [];
 };
 
 FragColor.prototype.render = function(){

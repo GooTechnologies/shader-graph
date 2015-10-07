@@ -1,4 +1,3 @@
-var FragMainNode = require('./FragMainNode');
 var FragmentGraph = require('./FragmentGraph');
 var VertexGraph = require('./VertexGraph');
 
@@ -14,16 +13,16 @@ function GraphShader(){
 }
 
 GraphShader.prototype.buildShader = function(){
-	var varCount = 0;
 	var shaderDef = {
+		processors: [],
+		defines: {},
 		attributes : {},
 		uniforms : {},
 		vshader: '',
 		fshader : ''
 	};
 
-	shaderDef.fshader = this.fragmentGraph.buildShader();
-
+	// Uniforms and attributes
 	[this.fragmentGraph, this.vertexGraph].forEach(function (graph){
 		var key;
 
@@ -33,13 +32,16 @@ GraphShader.prototype.buildShader = function(){
 		});
 
 		// Attributes
-		var attributes = graph.getAttributes();
-		for(key in attributes){
-			shaderDef.attributes[key] = attributes[key];
-		}
+		graph.getAttributes().forEach(function(attribute){
+			shaderDef.attributes[attribute.name] = attribute.defaultValue;
+		});
 	});
 
+	// Source
+	shaderDef.fshader = this.fragmentGraph.buildShader();
 	shaderDef.vshader = this.vertexGraph.buildShader();
+
+	shaderDef.processors = shaderDef.processors.concat(this.fragmentGraph.getProcessors(), this.vertexGraph.getProcessors());
 
 	return shaderDef;
 };

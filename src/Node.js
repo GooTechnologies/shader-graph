@@ -60,15 +60,18 @@ Node.prototype.connect = function(key, targetNode, targetPortKey){
 	}));
 };
 
-Node.prototype.disconnect = function(key, targetNode, targetPortKey){
-
-};
+// todo
+Node.prototype.disconnect = function(key, targetNode, targetPortKey){};
 
 Node.prototype.getAttributes = function(){
 	return [];
 };
 
 Node.prototype.getUniforms = function(){
+	return [];
+};
+
+Node.prototype.getProcessors = function(){
 	return [];
 };
 

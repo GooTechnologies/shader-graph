@@ -2,6 +2,6 @@ module.exports = {
 	Graph: require('./src/Graph'),
 	Node: require('./src/Node'),
 	Vector4Node: require('./src/Vector4Node'),
-	FragMainNode: require('./src/FragMainNode'),
+	UberNode: require('./src/UberNode'),
 	GraphShader: require('./src/GraphShader')
 };

@@ -5,4 +5,5 @@ function Attribute(options){
 
 	this.type = options.type || 'float';
 	this.name = options.name || 'aUntitled';
+	this.defaultValue = options.defaultValue || 'POSITION';
 }

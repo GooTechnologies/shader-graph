@@ -5,13 +5,16 @@ module.exports = {
 	GraphShader: {
 		simple: function (test) {
 			var shader = new GraphShader();
-			
+			var fragmentGraph = shader.fragmentGraph;
+			var vertexGraph = shader.vertexGraph;
+
 			var vectorNode = new Vector4Node({
 				defaultValue: [1,1,1,1]
 			});
 			shader.fragmentGraph.addNode(vectorNode);
 
-			shader.fragmentGraph.fragColorNode.connect('rgba', vectorNode, 'rgba');
+			test.ok(fragmentGraph.mainNode.canConnect('rgba', vectorNode, 'rgba'));
+			fragmentGraph.mainNode.connect('rgba', vectorNode, 'rgba');
 
 			var shaderDef = shader.buildShader();
 
@@ -30,8 +33,10 @@ module.exports = {
 				'attribute vec3 vertexPosition;',
 				'uniform mat4 viewProjectionMatrix;',
 				'uniform mat4 worldMatrix;',
-				'void main(void) {',
+				'void main(void){',
+					'{',
 					'gl_Position = viewProjectionMatrix * worldMatrix * vec4(vertexPosition, 1.0);',
+					'}',
 				'}'
 			].join('\n'));
 

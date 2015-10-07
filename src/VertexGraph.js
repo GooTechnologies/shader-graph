@@ -1,9 +1,12 @@
+var PositionNode = require('./PositionNode');
 var Graph = require('./Graph');
 var Uniform = require('./Uniform');
+var Attribute = require('./Attribute');
 
 module.exports = VertexGraph;
 
 function VertexGraph(options){
+	options.mainNode = new PositionNode();
 	Graph.call(this, options);
 }
 VertexGraph.prototype = Object.create(Graph.prototype);
@@ -27,6 +30,10 @@ VertexGraph.prototype.getUniforms = function(){
 
 VertexGraph.prototype.getAttributes = function(){
 	var attributes = Graph.prototype.getAttributes.apply(this);
-	attributes.vertexPosition = 'POSITION';
+	attributes.push(new Attribute({
+		name: 'vertexPosition',
+		defaultValue: 'POSITION',
+		type: 'vec3'
+	}));
 	return attributes;
 };

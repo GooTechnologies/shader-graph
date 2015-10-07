@@ -63,25 +63,29 @@ Graph.prototype.getUniforms = function(){
 };
 
 Graph.prototype.getAttributes = function(){
-	var attributes = {};
+	var attributes = [];
 	this.nodes.forEach(function (node){
-		var u = node.getAttributes();
-		for(var key in u){
-			attributes[key] = u[key];
-		}
+		attributes = attributes.concat(node.getAttributes());
 	});
 	return attributes;
+};
+
+Graph.prototype.getProcessors = function(){
+	var processors = [];
+	this.nodes.forEach(function (node){
+		processors = processors.concat(node.getProcessors());
+	});
+	return processors;
 };
 
 Graph.prototype.buildShader = function(){
 	this.sortNodes();
 
 	var shaderSource = [];
-	var i,j;
+	var i, j, node;
 
 	var nodes = this.nodes;
 
-	// Add attribute declarations
 	function sortByName(a1, a2){
 		if(a1.name === a2.name){
 			return 0;
@@ -91,8 +95,10 @@ Graph.prototype.buildShader = function(){
 			return -1;
 		}
 	}
-	Object.keys(this.getAttributes()).sort(sortByName).forEach(function(name){
-		shaderSource.push('attribute ' + name + ';');
+
+	// Add attribute declarations
+	this.getAttributes().sort(sortByName).forEach(function(attribute){
+		shaderSource.push('attribute ' + attribute.type + ' ' + attribute.name + ';');
 	});
 
 	// Add uniform declarations
@@ -104,7 +110,7 @@ Graph.prototype.buildShader = function(){
 
 	// Add connection variable decralations
 	for (i = 0; i < nodes.length; i++) {
-		var node = nodes[i];
+		node = nodes[i];
 		for (var k = 0; k < node.outputPorts.length; k++) {
 			var key = node.outputPorts[k];
 			var types = node.getOutputTypes(key);
@@ -115,11 +121,16 @@ Graph.prototype.buildShader = function(){
 		}
 	}
 
-	// Add node code
+	// Add node codes
 	for (i = 0; i < nodes.length; i++) {
-		var nodeSource = nodes[i].render();
-		shaderSource.push('{', nodeSource, '}');
+		node = nodes[i];
+		if(node !== this.mainNode){ // Save main node until last
+			var nodeSource = node.render();
+			shaderSource.push('{', nodeSource, '}');
+		}
 	}
+
+	shaderSource.push('{', this.mainNode.render(), '}');
 
 	shaderSource.push('}');
 
@@ -161,56 +172,3 @@ Graph.prototype.sortNodes = function(){
 		}
 	});
 };
-
-// // https://github.com/marcelklehr/toposort
-// Graph._toposort = (function () {
-// 	return function (edges){
-// 		return toposort(uniqueNodes(edges), edges);
-// 	};
-
-// 	function toposort(nodes, edges) {
-// 		var cursor = nodes.length
-// 			, sorted = new Array(cursor)
-// 			, visited = {}
-// 			, i = cursor;
-
-// 		while (i--) {
-// 			if (!visited[i]) visit(nodes[i], i, []);
-// 		}
-
-// 		return sorted;
-
-// 		function visit(node, i, predecessors) {
-// 			if(predecessors.indexOf(node) >= 0) {
-// 				throw new Error('Cyclic dependency: '+JSON.stringify(node));
-// 			}
-
-// 			if (visited[i]) return;
-// 			visited[i] = true;
-
-// 			// outgoing edges
-// 			var outgoing = edges.filter(function(edge){
-// 				return edge[0] === node;
-// 			});
-// 			if (i = outgoing.length) {
-// 				var preds = predecessors.concat(node);
-// 				do {
-// 					var child = outgoing[--i][1];
-// 					visit(child, nodes.indexOf(child), preds);
-// 				} while (i);
-// 			}
-
-// 			sorted[--cursor] = node;
-// 		}
-// 	}
-
-// 	function uniqueNodes(arr){
-// 		var res = [];
-// 		for (var i = 0, len = arr.length; i < len; i++) {
-// 			var edge = arr[i];
-// 			if (res.indexOf(edge[0]) < 0) res.push(edge[0]);
-// 			if (res.indexOf(edge[1]) < 0) res.push(edge[1]);
-// 		}
-// 		return res;
-// 	}
-// })();

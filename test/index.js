@@ -1,5 +1,5 @@
 var GraphShader = require('../src/GraphShader');
-var Vector4Node = require('../src/Vector4Node');
+var Vector4Node = require('../src/nodes/Vector4Node');
 
 module.exports = {
 	GraphShader: {

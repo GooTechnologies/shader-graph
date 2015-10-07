@@ -1,5 +1,5 @@
 var Graph = require('./Graph');
-var FragColorNode = require('./FragColorNode');
+var FragColorNode = require('./nodes/FragColorNode');
 
 module.exports = FragmentGraph;
 

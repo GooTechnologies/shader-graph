@@ -1,5 +1,5 @@
 var Node = require('./Node');
-var Uniform = require('./Uniform');
+var Uniform = require('../Uniform');
 
 module.exports = Vector4Node;
 

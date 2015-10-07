@@ -1,4 +1,4 @@
-var PositionNode = require('./PositionNode');
+var PositionNode = require('./nodes/PositionNode');
 var Graph = require('./Graph');
 var Uniform = require('./Uniform');
 var Attribute = require('./Attribute');

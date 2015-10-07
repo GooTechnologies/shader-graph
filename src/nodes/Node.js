@@ -1,4 +1,4 @@
-var Connection = require('./Connection');
+var Connection = require('../Connection');
 
 module.exports = Node;
 

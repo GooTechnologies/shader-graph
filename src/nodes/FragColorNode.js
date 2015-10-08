@@ -1,18 +1,21 @@
 var Node = require('./Node');
 
-module.exports = FragColor;
+module.exports = FragColorNode;
 
-function FragColor(options){
+function FragColorNode(options){
 	options = options || {};
 	Node.call(this, {
-		name: 'FragColor',
-		inputPorts: ['rgba']
+		name: 'FragColor'
 	});
 }
-FragColor.prototype = Object.create(Node.prototype);
-FragColor.constructor = FragColor;
+FragColorNode.prototype = Object.create(Node.prototype);
+FragColorNode.constructor = FragColorNode;
 
-FragColor.prototype.getInputVarNames = function(key){
+FragColorNode.prototype.getInputPorts = function(key){
+	return ['rgba'];
+};
+
+FragColorNode.prototype.getInputVarNames = function(key){
 	if(key === 'rgba'){
 		// Get the ID of the node connected
 		var connectedNode = this.graph.getNodeConnectedToInputPort(this, key);
@@ -22,6 +25,20 @@ FragColor.prototype.getInputVarNames = function(key){
 	return [];
 };
 
-FragColor.prototype.render = function(){
-	return 'gl_FragColor = ' + this.getInputVarNames('rgba')[0] + ';';
+FragColorNode.prototype.buildShader = function(){
+	return function(){
+		this.graph.sortNodes();
+		return [
+			this.graph.renderAttrubuteDeclarations(),
+			this.graph.renderUniformDeclarations(),
+			'void main(void){',
+				this.graph.renderConnectionVariableDeclarations(),
+				this.graph.renderNodeCodes(),
+				'{',
+					'gl_FragColor = ' + this.getInputVarNames('rgba')[0] + ';',
+				'}',
+			'}'
+		].join('\n');
+		
+	}.bind(this);
 };

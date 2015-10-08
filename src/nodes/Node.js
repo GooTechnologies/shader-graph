@@ -7,11 +7,18 @@ function Node(options){
 
 	this.id = Node._idCounter++;
 	this.name = options.name || 'Unnamed node';
-
-	this.outputPorts = options.outputPorts ? options.outputPorts.slice(0) : [];
-	this.inputPorts = options.inputPorts ? options.inputPorts.slice(0) : [];
 }
+
 Node._idCounter = 1;
+
+Node.prototype.getInputPorts = function(key){
+	return [];
+};
+
+Node.prototype.getOutputPorts = function(key){
+	return [];
+};
+
 Node.prototype.getInputTypes = function(key){
 	return [];
 };
@@ -41,10 +48,10 @@ Node.prototype.canConnect = function(key, targetNode, targetPortKey){
 	if(targetNode === this){
 		throw new Error('Cannot connect the node to itself');
 	}
-	if(this.inputPorts.indexOf(key) === -1){
+	if(this.getInputPorts().indexOf(key) === -1){
 		throw new Error(this.name + ' does not have input port ' + key);
 	}
-	if(targetNode.outputPorts.indexOf(targetPortKey) === -1){
+	if(targetNode.getOutputPorts().indexOf(targetPortKey) === -1){
 		throw new Error(targetNode.name + ' does not have output port ' + targetPortKey);
 	}
 	return true;
@@ -77,4 +84,24 @@ Node.prototype.getProcessors = function(){
 
 Node.prototype.render = function(){
 	return '';
+};
+
+Node.prototype.getBuilder = function(){};
+
+Node.prototype.buildShader = function(){
+	return function(){
+		this.graph.sortNodes();
+		return [
+			this.graph.renderAttrubuteDeclarations(),
+			this.graph.renderUniformDeclarations(),
+			'void main(void){',
+				this.graph.renderConnectionVariableDeclarations(),
+				this.graph.renderNodeCodes(),
+				'{',
+					//this.mainNode.render(),
+				'}',
+			'}'
+		].join('\n');
+		
+	}.bind(this);
 };

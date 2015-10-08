@@ -33,13 +33,15 @@ GraphShader.prototype.buildShader = function(){
 
 		// Attributes
 		graph.getAttributes().forEach(function(attribute){
-			shaderDef.attributes[attribute.name] = attribute.defaultValue;
+			shaderDef.attributes[attribute.name] = attribute.key;
 		});
 	});
 
 	// Source
-	shaderDef.fshader = this.fragmentGraph.buildShader();
-	shaderDef.vshader = this.vertexGraph.buildShader();
+	shaderDef.fshader = this.fragmentGraph.mainNode.buildShader();
+	shaderDef.vshader = this.vertexGraph.mainNode.buildShader();
+
+	shaderDef.builder = this.fragmentGraph.mainNode.getBuilder() || this.vertexGraph.mainNode.getBuilder();
 
 	shaderDef.processors = shaderDef.processors.concat(this.fragmentGraph.getProcessors(), this.vertexGraph.getProcessors());
 

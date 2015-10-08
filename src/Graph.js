@@ -78,41 +78,37 @@ Graph.prototype.getProcessors = function(){
 	return processors;
 };
 
-Graph.prototype.buildShader = function(){
-	this.sortNodes();
+function sortByName(a1, a2){
+	if(a1.name === a2.name){
+		return 0;
+	} else if(a1.name > a2.name){
+		return 1;
+	} else {
+		return -1;
+	}
+}
 
+Graph.prototype.renderNodeCodes = function(){
 	var shaderSource = [];
-	var i, j, node;
-
 	var nodes = this.nodes;
-
-	function sortByName(a1, a2){
-		if(a1.name === a2.name){
-			return 0;
-		} else if(a1.name > a2.name){
-			return 1;
-		} else {
-			return -1;
+	for (var i = 0; i < nodes.length; i++) {
+		node = nodes[i];
+		if(node !== this.mainNode){ // Save main node until last
+			var nodeSource = node.render();
+			shaderSource.push('{', nodeSource, '}');
 		}
 	}
+	return shaderSource.join('\n');
+};
 
-	// Add attribute declarations
-	this.getAttributes().sort(sortByName).forEach(function(attribute){
-		shaderSource.push('attribute ' + attribute.type + ' ' + attribute.name + ';');
-	});
-
-	// Add uniform declarations
-	this.getUniforms().sort(sortByName).forEach(function(uniform){
-		shaderSource.push('uniform ' + uniform.type + ' ' + uniform.name + ';');
-	});
-
-	shaderSource.push('void main(void){');
-
-	// Add connection variable decralations
-	for (i = 0; i < nodes.length; i++) {
-		node = nodes[i];
-		for (var k = 0; k < node.outputPorts.length; k++) {
-			var key = node.outputPorts[k];
+Graph.prototype.renderConnectionVariableDeclarations = function(){
+	var shaderSource = [];
+	var nodes = this.nodes;
+	for (var i = 0; i < this.nodes.length; i++) {
+		node = this.nodes[i];
+		var outputPorts = node.getOutputPorts();
+		for (var k = 0; k < outputPorts.length; k++) {
+			var key = outputPorts[k];
 			var types = node.getOutputTypes(key);
 			var names = node.getOutputVarNames(key);
 			for (j = 0; j < types.length; j++) {
@@ -120,42 +116,26 @@ Graph.prototype.buildShader = function(){
 			}
 		}
 	}
-
-	// Add node codes
-	for (i = 0; i < nodes.length; i++) {
-		node = nodes[i];
-		if(node !== this.mainNode){ // Save main node until last
-			var nodeSource = node.render();
-			shaderSource.push('{', nodeSource, '}');
-		}
-	}
-
-	shaderSource.push('{', this.mainNode.render(), '}');
-
-	shaderSource.push('}');
-
 	return shaderSource.join('\n');
 };
 
-Graph.prototype.buildSampleShader = function(endNode){
-	this.sortNodes();
-
-	endNode = endNode || this.mainNode;
-
-	// TODO: remove nodes that arent connected to endNode
-
-	var varCount = 0;
-	var shaderDef = {
-		attributes : {},
-		uniforms : {},
-		vshader: '',
-		fshader : ''
-	};
-
-	return shaderDef;
+Graph.prototype.renderUniformDeclarations = function(){
+	var shaderSource = [];
+	this.getUniforms().sort(sortByName).forEach(function(uniform){
+		shaderSource.push('uniform ' + uniform.type + ' ' + uniform.name + ';');
+	});
+	return shaderSource.join('\n');
 };
 
-// Topology sort of the nodes
+Graph.prototype.renderAttrubuteDeclarations = function(){
+	var shaderSource = [];
+	this.getAttributes().sort(sortByName).forEach(function(attribute){
+		shaderSource.push('attribute ' + attribute.type + ' ' + attribute.name + ';');
+	});
+	return shaderSource.join('\n');
+};
+
+// Topology sort the nodes
 Graph.prototype.sortNodes = function(){
 	var edges = this.connections.map(function (connection) {
 		return [

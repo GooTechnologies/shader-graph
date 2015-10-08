@@ -6,13 +6,18 @@ module.exports = Vector4Node;
 function Vector4Node(options){
 	options = options || {};
 	Node.call(this, {
-		name: 'Vector4',
-		outputPorts: ['rgba']
+		name: 'Vector4'
 	});
 	this.defaultValue = options.defaultValue ? options.defaultValue.slice(0) : [0,0,0,0];
 }
 Vector4Node.prototype = Object.create(Node.prototype);
 Vector4Node.constructor = Vector4Node;
+
+Vector4Node.prototype.getOutputPorts = function(key){
+	return [
+		'rgba'
+	];
+};
 
 Vector4Node.prototype.getOutputTypes = function(key){
 	return key === 'rgba' ? ['vec4'] : [];

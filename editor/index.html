@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>React Tutorial</title>
+  </head>
+  <body>
+    <h1>ShaderGraph Editor</h1>
+    <div id="content"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/babel">
+
+      var nodeTypes = ['sin','time'];
+
+      var App = React.createClass({
+        render: function() {
+          var nodes = [];
+          return (
+            <div className="commentBox">
+              <NodeEditor nodes={nodes}/>
+              <NodeSelectList nodeTypes={nodeTypes}/>
+            </div>
+          );
+        }
+      });
+
+      var NodeSelectList = React.createClass({
+        render: function() {
+          var items = this.props.nodeTypes.map(function (type) {
+            return (
+              <li key={type}>
+                <AddNodeButton name={type}/>
+              </li>
+            );
+          });
+          return (
+            <ul>
+              {items}
+            </ul>
+          );
+        }
+      });
+
+      var AddNodeButton = React.createClass({
+        render: function() {
+          return (
+            <button>{this.props.name}</button>
+          );
+        }
+      });
+
+      var NodeEditor = React.createClass({
+        render: function() {
+          var nodes = this.props.nodes;
+          return (
+            <div>
+              {nodes.map(function(result) {
+                return <li key={result.id}>{result.text}</li>;
+              })}
+            </div>
+          );
+        }
+      });
+
+      ReactDOM.render(
+        <App />,
+        document.getElementById('content')
+      );
+
+    </script>
+  </body>
+</html>

@@ -54,16 +54,16 @@
 		Vector4Node: __webpack_require__(8),
 		ValueNode: __webpack_require__(9),
 		UVNode: __webpack_require__(10),
-		TimeNode: __webpack_require__(18),
-		SineNode: __webpack_require__(19),
+		TimeNode: __webpack_require__(13),
+		SineNode: __webpack_require__(14),
 
 		Attribute: __webpack_require__(11),
 		Connection: __webpack_require__(2),
-		FragmentGraph: __webpack_require__(12),
-		Graph: __webpack_require__(13),
-		GraphShader: __webpack_require__(15),
+		FragmentGraph: __webpack_require__(15),
+		Graph: __webpack_require__(16),
+		GraphShader: __webpack_require__(18),
 		Uniform: __webpack_require__(7),
-		Varying: __webpack_require__(17),
+		Varying: __webpack_require__(12),
 
 	};
 
@@ -851,7 +851,7 @@
 	var Node = __webpack_require__(1);
 	var Uniform = __webpack_require__(7);
 	var Attribute = __webpack_require__(11);
-	var Varying = __webpack_require__(17);
+	var Varying = __webpack_require__(12);
 
 	module.exports = UVNode;
 
@@ -949,9 +949,123 @@
 
 /***/ },
 /* 12 */
+/***/ function(module, exports) {
+
+	module.exports = Varying;
+
+	function Varying(options){
+		options = options || {};
+
+		this.type = options.type || 'float';
+		this.name = options.name || 'vUntitled';
+		this.attributeKey = options.attributeKey || ''; // e.g. COLOR
+		this.ifdef = options.ifdef || ''; // A define name or empty string to indicate no define dependency
+	}
+
+/***/ },
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Graph = __webpack_require__(13);
+	var Node = __webpack_require__(1);
+	var Uniform = __webpack_require__(7);
+
+	module.exports = TimeNode;
+
+	// Adds a vec4 uniform to the shader.
+	function TimeNode(options){
+		options = options || {};
+		Node.call(this, {
+			name: 'Time'
+		});
+	}
+	TimeNode.prototype = Object.create(Node.prototype);
+	TimeNode.constructor = TimeNode;
+
+	TimeNode.prototype.getOutputPorts = function(key){
+		return ['time'];
+	};
+
+	TimeNode.prototype.getOutputTypes = function(key){
+		return key === 'time' ? ['float'] : [];
+	};
+
+	TimeNode.prototype.getOutputVarNames = function(key){
+		return key === 'time' ? ['time' + this.id] : [];
+	};
+
+	TimeNode.prototype.getUniforms = function(){
+		var uniforms = [
+			new Uniform({
+				name: 'uTime' + this.id,
+				defaultValue: 'TIME',
+				type: 'float'
+			})
+		];
+		return uniforms;
+	};
+
+	TimeNode.prototype.render = function(){
+		var outVarName = this.getOutputVarNames('time')[0];
+		if(outVarName){
+			return outVarName + ' = ' + this.getUniforms()[0].name + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+
+	module.exports = SineNode;
+
+	// Adds a vec4 uniform to the shader.
+	function SineNode(options){
+		options = options || {};
+		Node.call(this, {
+			name: 'Sine'
+		});
+	}
+	SineNode.prototype = Object.create(Node.prototype);
+	SineNode.constructor = SineNode;
+
+	SineNode.prototype.getInputPorts = function(key){
+		return ['x'];
+	};
+
+	SineNode.prototype.getOutputPorts = function(key){
+		return ['y'];
+	};
+
+	SineNode.prototype.getOutputTypes = function(key){
+		return key === 'y' ? ['float'] : [];
+	};
+
+	SineNode.prototype.getOutputVarNames = function(key){
+		return key === 'y' ? ['y' + this.id] : [];
+	};
+
+	SineNode.prototype.render = function(){
+		var outVarName = this.getOutputVarNames('y')[0];
+		var inVarName = this.getInputVariableNames('x')[0];
+		if(outVarName && inVarName){
+			return outVarName + ' = sin(' + inVarName + ');';
+		} else if(outVarName){
+			return outVarName + ' = 0.0;';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Graph = __webpack_require__(16);
 	var FragColorNode = __webpack_require__(3);
 
 	module.exports = FragmentGraph;
@@ -964,10 +1078,10 @@
 	FragmentGraph.prototype = Object.create(Graph.prototype);
 
 /***/ },
-/* 13 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toposort = __webpack_require__(14);
+	var toposort = __webpack_require__(17);
 
 	module.exports = Graph;
 
@@ -1169,7 +1283,7 @@
 	};
 
 /***/ },
-/* 14 */
+/* 17 */
 /***/ function(module, exports) {
 
 	
@@ -1234,11 +1348,11 @@
 
 
 /***/ },
-/* 15 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var FragmentGraph = __webpack_require__(12);
-	var VertexGraph = __webpack_require__(16);
+	var FragmentGraph = __webpack_require__(15);
+	var VertexGraph = __webpack_require__(19);
 
 	module.exports = GraphShader;
 
@@ -1291,11 +1405,11 @@
 	};
 
 /***/ },
-/* 16 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var PositionNode = __webpack_require__(4);
-	var Graph = __webpack_require__(13);
+	var Graph = __webpack_require__(16);
 	var Uniform = __webpack_require__(7);
 	var Attribute = __webpack_require__(11);
 
@@ -1333,120 +1447,6 @@
 		}));
 		return attributes;
 	};
-
-/***/ },
-/* 17 */
-/***/ function(module, exports) {
-
-	module.exports = Varying;
-
-	function Varying(options){
-		options = options || {};
-
-		this.type = options.type || 'float';
-		this.name = options.name || 'vUntitled';
-		this.attributeKey = options.attributeKey || ''; // e.g. COLOR
-		this.ifdef = options.ifdef || ''; // A define name or empty string to indicate no define dependency
-	}
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var Uniform = __webpack_require__(7);
-
-	module.exports = TimeNode;
-
-	// Adds a vec4 uniform to the shader.
-	function TimeNode(options){
-		options = options || {};
-		Node.call(this, {
-			name: 'Time'
-		});
-	}
-	TimeNode.prototype = Object.create(Node.prototype);
-	TimeNode.constructor = TimeNode;
-
-	TimeNode.prototype.getOutputPorts = function(key){
-		return ['time'];
-	};
-
-	TimeNode.prototype.getOutputTypes = function(key){
-		return key === 'time' ? ['float'] : [];
-	};
-
-	TimeNode.prototype.getOutputVarNames = function(key){
-		return key === 'time' ? ['time' + this.id] : [];
-	};
-
-	TimeNode.prototype.getUniforms = function(){
-		var uniforms = [
-			new Uniform({
-				name: 'uTime' + this.id,
-				defaultValue: 'TIME',
-				type: 'float'
-			})
-		];
-		return uniforms;
-	};
-
-	TimeNode.prototype.render = function(){
-		var outVarName = this.getOutputVarNames('time')[0];
-		if(outVarName){
-			return outVarName + ' = ' + this.getUniforms()[0].name + ';';
-		} else {
-			return '';
-		}
-	};
-
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-
-	module.exports = SineNode;
-
-	// Adds a vec4 uniform to the shader.
-	function SineNode(options){
-		options = options || {};
-		Node.call(this, {
-			name: 'Sine'
-		});
-	}
-	SineNode.prototype = Object.create(Node.prototype);
-	SineNode.constructor = SineNode;
-
-	SineNode.prototype.getInputPorts = function(key){
-		return ['x'];
-	};
-
-	SineNode.prototype.getOutputPorts = function(key){
-		return ['y'];
-	};
-
-	SineNode.prototype.getOutputTypes = function(key){
-		return key === 'y' ? ['float'] : [];
-	};
-
-	SineNode.prototype.getOutputVarNames = function(key){
-		return key === 'y' ? ['y' + this.id] : [];
-	};
-
-	SineNode.prototype.render = function(){
-		var outVarName = this.getOutputVarNames('y')[0];
-		var inVarName = this.getInputVariableNames('x')[0];
-		if(outVarName && inVarName){
-			return outVarName + ' = sin(' + inVarName + ');';
-		} else if(outVarName){
-			return outVarName + ' = 0.0;';
-		} else {
-			return '';
-		}
-	};
-
 
 /***/ }
 /******/ ]);

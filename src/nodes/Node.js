@@ -39,26 +39,51 @@ Node.prototype.canBuildShader = function(){
 	return false;
 };
 
+Node.prototype.getOutputVariableNames = function(key){
+	return [key + this.id]; // todo really an array?
+};
+
+Node.prototype.getInputVariableNames = function(key){
+	var connectedNode = this.graph.getNodeConnectedToInputPort(this, key);
+	if(connectedNode){
+		var portKey = this.graph.getPortKeyConnectedToInputPort(this, key);
+		return  [portKey + connectedNode.id];
+	}
+	return [];
+};
+
 Node.prototype.buildShader = function(){
 	return this.graph.buildShader(this);
 };
 
-Node.prototype.canConnect = function(key, targetNode, targetPortKey){
-	if(!this.graph) throw new Error('Node must be added to a Graph to be connected.');
+Node.prototype._getConnectError = function(key, targetNode, targetPortKey){
+	if(!this.graph){
+		return 'Node must be added to a Graph to be connected.';
+	}
+
 	if(targetNode === this){
-		throw new Error('Cannot connect the node to itself');
+		return 'Cannot connect the node to itself';
 	}
 	if(this.getInputPorts().indexOf(key) === -1){
-		throw new Error(this.name + ' does not have input port ' + key);
+		return this.name + ' does not have input port ' + key;
 	}
 	if(targetNode.getOutputPorts().indexOf(targetPortKey) === -1){
-		throw new Error(targetNode.name + ' does not have output port ' + targetPortKey);
+		return targetNode.name + ' does not have output port ' + targetPortKey;
 	}
-	return true;
+}
+
+Node.prototype.canConnect = function(key, targetNode, targetPortKey){
+	var errorMessage = this._getConnectError(key, targetNode, targetPortKey);
+	return errorMessage ? false : true;
 };
 
 Node.prototype.connect = function(key, targetNode, targetPortKey){
-	if(!this.graph) throw new Error('Node must be added to a Graph to be connected.');
+	var errorMessage = this._getConnectError(key, targetNode, targetPortKey);
+
+	if(errorMessage){
+		throw new Error(errorMessage);
+	}
+
 	this.graph.addConnection(new Connection({
 		fromNode: targetNode,
 		fromPortKey: targetPortKey,
@@ -75,6 +100,14 @@ Node.prototype.getAttributes = function(){
 };
 
 Node.prototype.getUniforms = function(){
+	return [];
+};
+
+Node.prototype.getUniforms = function(){
+	return [];
+};
+
+Node.prototype.getVaryings = function(){
 	return [];
 };
 
@@ -104,4 +137,8 @@ Node.prototype.buildShader = function(){
 		].join('\n');
 		
 	}.bind(this);
+};
+
+Node.prototype._numberToGLSL = function(n){
+	return (n+'').indexOf('.') === -1 ? n+'.0' : n+'';
 };

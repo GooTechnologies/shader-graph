@@ -12,6 +12,10 @@ function GraphShader(){
 	});
 }
 
+GraphShader.prototype.getNodes = function(){
+	return this.vertexGraph.nodes.concat(this.fragmentGraph.nodes);
+};
+
 GraphShader.prototype.buildShader = function(){
 	var shaderDef = {
 		processors: [],
@@ -24,7 +28,6 @@ GraphShader.prototype.buildShader = function(){
 
 	// Uniforms and attributes
 	[this.fragmentGraph, this.vertexGraph].forEach(function (graph){
-		var key;
 
 		// Uniforms
 		graph.getUniforms().forEach(function(uniform){

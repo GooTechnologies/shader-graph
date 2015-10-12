@@ -15,11 +15,13 @@ PositionNode.prototype.buildShader = function(){
 	return function(){
 		this.graph.sortNodes();
 		return [
+			this.graph.renderVaryingDeclarations(),
 			this.graph.renderAttrubuteDeclarations(),
 			this.graph.renderUniformDeclarations(),
 			'void main(void){',
 				this.graph.renderConnectionVariableDeclarations(),
 				this.graph.renderNodeCodes(),
+				this.graph.renderAttributeToVaryingAssignments(),
 				'{',
 					'gl_Position = viewProjectionMatrix * worldMatrix * vec4(vertexPosition, 1.0);',
 				'}',

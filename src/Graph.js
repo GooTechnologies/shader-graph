@@ -5,6 +5,7 @@ module.exports = Graph;
 function Graph(options){
 	options = options || {};
 
+	this.shader = options.shader || null;
 	this.nodes = [];
 	this.connections = [];
 	this.mainNode = options.mainNode || null;
@@ -14,6 +15,7 @@ function Graph(options){
 }
 
 Graph.prototype.addNode = function(node){
+	if(!node) throw new Error('Node not given');
 	if(node.graph) throw new Error('Node was already added to a graph');
 	this.nodes.push(node);
 	node.graph = this;
@@ -54,6 +56,13 @@ Graph.prototype.getNodeConnectedToInputPort = function(node, inputPort){
 	return connection && connection.fromNode;
 };
 
+Graph.prototype.getPortKeyConnectedToInputPort = function(node, inputPort){
+	var connection = this.connections.filter(function (conn){
+		return conn.toNode === node && conn.toPortKey === inputPort;
+	})[0];
+	return connection && connection.fromPortKey;
+};
+
 Graph.prototype.getUniforms = function(){
 	var uniforms = [];
 	this.nodes.forEach(function (node){
@@ -64,10 +73,18 @@ Graph.prototype.getUniforms = function(){
 
 Graph.prototype.getAttributes = function(){
 	var attributes = [];
-	this.nodes.forEach(function (node){
+	this.shader.getNodes().forEach(function (node){
 		attributes = attributes.concat(node.getAttributes());
 	});
 	return attributes;
+};
+
+Graph.prototype.getVaryings = function(){
+	var varyings = [];
+	this.shader.getNodes().forEach(function (node){
+		varyings = varyings.concat(node.getVaryings());
+	});
+	return varyings;
 };
 
 Graph.prototype.getProcessors = function(){
@@ -101,16 +118,31 @@ Graph.prototype.renderNodeCodes = function(){
 	return shaderSource.join('\n');
 };
 
+Graph.prototype.renderAttributeToVaryingAssignments = function(){
+	var shaderSource = [];
+	var keyToAttributeMap = {};
+	this.getAttributes().forEach(function(attribute){
+		keyToAttributeMap[attribute.key] = attribute;
+	});
+	this.getVaryings().sort(sortByName).forEach(function(varying){
+		var attribute = keyToAttributeMap[varying.attributeKey];
+		if(attribute){
+			shaderSource.push(varying.name + ' = ' + attribute.name + ';');
+		}
+	});
+	return shaderSource.join('\n');
+};
+
 Graph.prototype.renderConnectionVariableDeclarations = function(){
 	var shaderSource = [];
 	var nodes = this.nodes;
-	for (var i = 0; i < this.nodes.length; i++) {
-		node = this.nodes[i];
+	for (var i = 0; i < nodes.length; i++) {
+		node = nodes[i];
 		var outputPorts = node.getOutputPorts();
 		for (var k = 0; k < outputPorts.length; k++) {
 			var key = outputPorts[k];
 			var types = node.getOutputTypes(key);
-			var names = node.getOutputVarNames(key);
+			var names = node.getOutputVariableNames(key);
 			for (j = 0; j < types.length; j++) {
 				shaderSource.push(types[j] + ' ' + names[j] + ';');
 			}
@@ -135,6 +167,14 @@ Graph.prototype.renderAttrubuteDeclarations = function(){
 	return shaderSource.join('\n');
 };
 
+Graph.prototype.renderVaryingDeclarations = function(){
+	var shaderSource = [];
+	this.getVaryings().sort(sortByName).forEach(function(varying){
+		shaderSource.push('varying ' + varying.type + ' ' + varying.name + ';');
+	});
+	return shaderSource.join('\n');
+};
+
 // Topology sort the nodes
 Graph.prototype.sortNodes = function(){
 	var edges = this.connections.map(function (connection) {
@@ -144,11 +184,17 @@ Graph.prototype.sortNodes = function(){
 		];
 	});
 	var nodeIds = toposort(edges);
-	var nodes = this.nodes;
+	var nodes = this.nodes.slice(0);
 	this.nodes = nodeIds.map(function (nodeId) {
-		for (var i = 0; i < nodes.length; i++) {
+		for (var i = nodes.length - 1; i >= 0; i--) {
 			var node = nodes[i];
-			if(nodeId === node.id) return node;
+			if(nodeId === node.id) return nodes.splice(i, 1)[0];
 		}
+		throw new Error('Node id not found: ' + nodeId);
 	});
+
+	// add any left overs (needed?)
+	while(nodes.length){
+		this.nodes.push(nodes.pop())
+	}
 };

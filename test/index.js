@@ -3,7 +3,7 @@ var Vector4Node = require('../src/nodes/Vector4Node');
 
 module.exports = {
 	GraphShader: {
-		simple: function (test) {
+		fragColor: function (test) {
 			var shader = new GraphShader();
 			var fragmentGraph = shader.fragmentGraph;
 			var vertexGraph = shader.vertexGraph;

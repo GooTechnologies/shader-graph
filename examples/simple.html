@@ -1,0 +1,87 @@
+<html>
+<head>
+	<style>
+		canvas {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+</head>
+<body>
+<script type="text/javascript" src="lib/goo.js"></script>
+<script type="text/javascript" src="../build/shadergraph.js"></script>
+<script type="text/javascript">
+
+	var gooRunner = new goo.GooRunner();
+	gooRunner.renderer.setClearColor(0, 0, 0, 1);
+	gooRunner.renderer.domElement.id = 'goo';
+	document.body.appendChild(gooRunner.renderer.domElement);
+
+	var world = gooRunner.world;
+
+	var shader = new ShaderGraph.GraphShader();
+	var fragmentGraph = shader.fragmentGraph;
+	var vertexGraph = shader.vertexGraph;
+
+	var vectorNode = new ShaderGraph.Vector4Node();
+	shader.fragmentGraph.addNode(vectorNode);
+
+	var valueNode = new ShaderGraph.ValueNode({
+		value: 1
+	});
+	shader.fragmentGraph.addNode(valueNode);
+
+	var uvNode = new ShaderGraph.UVNode();
+	shader.fragmentGraph.addNode(uvNode);
+
+	var timeNode = new ShaderGraph.TimeNode();
+	shader.fragmentGraph.addNode(timeNode);
+
+	var sineNode = new ShaderGraph.SineNode();
+	shader.fragmentGraph.addNode(sineNode);
+
+	sineNode.connect('x', timeNode, 'time');
+
+	vectorNode.connect('r', uvNode, 'u');
+	vectorNode.connect('g', uvNode, 'v');
+	vectorNode.connect('g', sineNode, 'y');
+	vectorNode.connect('b', valueNode, 'value');
+
+	fragmentGraph.mainNode.connect('rgba', vectorNode, 'rgba');
+
+	var shaderDef = shader.buildShader();
+
+	console.log('// vshader\n' + shaderDef.vshader());
+	console.log('// fshader\n' + shaderDef.fshader());
+
+	console.log(shaderDef)
+
+	var material = new goo.Material(shaderDef);
+	world.createEntity(new goo.Box(), material, function (entity){
+		entity.setRotation(0, -world.time * 0.1, 0);
+	}).addToWorld();
+
+	var camera = new goo.Camera();
+
+	var orbitScript = goo.Scripts.create(goo.OrbitCamControlScript, {
+		domElement: gooRunner.renderer.domElement,
+		lookAtDistance: null,
+		spherical: new goo.Vector3(3, -20, 30),
+		lookAtPoint: new goo.Vector3(0, 0, 0),
+		releaseVelocity: true,
+		interpolationSpeed: 7,
+		dragButton: 'Any'
+	});
+
+	var entity = gooRunner.world.createEntity(camera, orbitScript, 'CameraEntity').addToWorld();
+
+	world.createEntity(new goo.PointLight(), [ 100, 100, 100]).addToWorld();
+	world.createEntity(new goo.PointLight(), [-100, -100, -100]).addToWorld();
+	world.createEntity(new goo.PointLight(), [-100, 100, -100]).addToWorld();
+
+</script>
+</body>
+</html>

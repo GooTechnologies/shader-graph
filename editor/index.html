@@ -3,28 +3,253 @@
   <head>
     <meta charset="utf-8" />
     <title>React Tutorial</title>
+    <style>
+
+      /* jsplumb start */
+      #canvas {
+        width: 600px;
+        height: 400px;
+        position: relative;
+        background-color: #eee;
+      }
+
+      .demo {
+          /* for IE10+ touch devices */
+          touch-action:none;
+      }
+
+      .w {
+          padding: 5px;
+          text-align: center;
+          position: absolute;
+          z-index: 4;
+          border: 1px solid black;
+          cursor: move;
+          background-color: white;
+          font-size: 11px;
+          min-width: 100px;
+          min-height: 100px;
+      }
+
+      .w:hover {
+          background-color: #ddd;
+      }
+
+      .aLabel.jsplumb-hover, .jsplumb-source-hover, .jsplumb-target-hover {
+          background-color: #ddd;
+      }
+
+      .aLabel {
+          background-color: white;
+          padding: 3px;
+          border: 1px solid black;
+          cursor: pointer;
+      }
+
+      .ep {
+          position: absolute;
+          top: 10px;
+          right: -30px;
+          width: 30px;
+          height: 20px;
+          background-color: gray;
+          cursor: pointer;
+      }
+
+      .statemachine-demo .jsplumb-endpoint {
+          z-index: 3;
+      }
+
+      #opened {
+          left: 10em;
+          top: 10em;
+      }
+
+      #phone1 {
+          left: 35em;
+          top: 12em;
+          width: 7em;
+      }
+
+      #inperson {
+          left: 12em;
+          top: 23em;
+      }
+
+      #phone2 {
+          left: 28em;
+          top: 24em;
+      }
+
+      .dragHover {
+          border: 2px solid orange;
+      }
+
+      path, .jsplumb-endpoint {
+        cursor: pointer;
+      }
+
+      /* jsplumb end */
+
+
+    </style>
   </head>
   <body>
     <h1>ShaderGraph Editor</h1>
+
     <div id="content"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react-dom.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <div class="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
+        <div class="w" id="opened">BEGIN
+            <div class="ep" action="begin"></div>
+        </div>
+        <div class="w" id="phone1">PHONE INTERVIEW 1
+            <div class="ep" action="phone1"></div>
+        </div>
+        <div class="w" id="inperson">IN PERSON
+            <div class="ep" action="inperson"></div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="js/jsplumb.js"></script>
+    <script type="text/javascript">
+    jsPlumb.ready(function () {
+
+    // setup some defaults for jsPlumb.
+    var instance = jsPlumb.getInstance({
+        Endpoint: ["Dot", {radius: 0.00001}],
+        Connector:"StateMachine",
+        HoverPaintStyle: {
+          strokeStyle: "#ddd",
+          lineWidth: 2
+        },
+        ConnectionOverlays: [
+            [ "Arrow", {
+                location: 1,
+                id: "arrow",
+                length: 14,
+                foldback: 1
+            } ]
+        ],
+        Container: "canvas"
+    });
+
+    instance.registerConnectionType("basic", { anchor:"Continuous", connector:"StateMachine" });
+
+    var canvas = document.getElementById("canvas");
+    var windows = jsPlumb.getSelector(".statemachine-demo .w");
+
+    // bind a click listener to each connection; the connection is deleted. you could of course
+    // just do this: jsPlumb.bind("click", jsPlumb.detach), but I wanted to make it clear what was
+    // happening.
+    instance.bind("click", function (c) {
+        instance.detach(c);
+    });
+
+    // bind a connection listener. note that the parameter passed to this function contains more than
+    // just the new connection - see the documentation for a full list of what is included in 'info'.
+    // this listener sets the connection's internal
+    // id as the label overlay's text.
+    instance.bind("connection", function (info) {
+        //info.connection.getOverlay("label").setLabel(info.connection.id);
+        console.log('connect');
+    });
+
+    instance.bind("connectionDetach", function() {
+        console.log("DETACH!")
+    })
+
+    // bind a double click listener to "canvas"; add new node when this occurs.
+    jsPlumb.on(canvas, "dblclick", function(e) {
+        newNode(e.offsetX, e.offsetY);
+    });
+
+    // initialise element as connection targets and source.
+    var initNode = function(el) {
+        var ep = el.querySelector('.ep');
+
+        // initialise draggable elements.
+        instance.draggable(el);
+
+        instance.makeSource(ep, {
+            //filter: ".ep",
+            anchor: "Continuous",
+            connectorStyle: {
+              strokeStyle: "black",
+              lineWidth: 2,
+              outlineColor: "transparent",
+              outlineWidth: 4
+            },
+            maxConnections: 1,
+            connectionType:"basic",
+            onMaxConnections: function (info, e) {
+                alert("Maximum connections (" + info.maxConnections + ") reached");
+            },
+            extract:{
+                "action": "the-action"
+            }
+        });
+
+        instance.makeTarget(ep, {
+            dropOptions: { hoverClass: "dragHover" },
+            anchor: "Continuous",
+            allowLoopback: false
+        });
+    };
+
+    var newNode = function(x, y) {
+        var d = document.createElement("div");
+        var id = jsPlumbUtil.uuid();
+        d.className = "w";
+        d.id = id;
+        d.innerHTML = id.substring(0, 7) + "<div class=\"ep\">RGBA</div>";
+        d.style.left = x + "px";
+        d.style.top = y + "px";
+        instance.getContainer().appendChild(d);
+        initNode(d);
+        return d;
+    };
+
+    // suspend drawing and initialise.
+    instance.batch(function () {
+        for (var i = 0; i < windows.length; i++) {
+            initNode(windows[i], true);
+        }
+
+        // instance.connect({ source: "opened", target: "phone1", type:"basic" });
+        // instance.connect({ source: "phone1", target: "inperson", type:"basic" });
+    });
+
+});
+</script>
+
+
+    <script src="js/react.js"></script>
+    <script src="js/react-dom.js"></script>
+    <script src="js/browser.min.js"></script>
+    <script src="js/jquery.min.js"></script>
     <script type="text/babel">
 
-      var nodeTypes = ['sin','time'];
-
       var App = React.createClass({
+        getInitialState: function(){
+          return { connections: [], nodes: [] };
+        },
         render: function() {
-          var nodes = [];
+          var nodeTypes = ['sin','time'];
           return (
-            <div className="commentBox">
-              <NodeEditor nodes={nodes}/>
-              <NodeSelectList nodeTypes={nodeTypes}/>
+            <div>
+              <NodeSelectList nodeTypes={nodeTypes} addNode={this.addNode}/>
+              <NodeEditor nodes={this.state.nodes}/>
             </div>
           );
+        },
+        addNode: function(type){
+          var state = this.state;
+          state.nodes.push({
+            id: Math.random(),
+            type: type
+          });
+          this.setState(state);
         }
       });
 
@@ -33,10 +258,10 @@
           var items = this.props.nodeTypes.map(function (type) {
             return (
               <li key={type}>
-                <AddNodeButton name={type}/>
+                <AddNodeButton addNode={this.props.addNode} type={type}/>
               </li>
             );
-          });
+          }, this);
           return (
             <ul>
               {items}
@@ -48,8 +273,11 @@
       var AddNodeButton = React.createClass({
         render: function() {
           return (
-            <button>{this.props.name}</button>
+            <button onClick={this.handleClick}>{this.props.type}</button>
           );
+        },
+        handleClick: function(){
+          this.props.addNode(this.props.type);
         }
       });
 
@@ -58,9 +286,20 @@
           var nodes = this.props.nodes;
           return (
             <div>
-              {nodes.map(function(result) {
-                return <li key={result.id}>{result.text}</li>;
+              {nodes.map(function(node) {
+                return <Node key={node.id} data={node} />;
               })}
+            </div>
+          );
+        }
+      });
+
+      var Node = React.createClass({
+        render: function() {
+          return (
+            <div>
+              <div>{this.props.data.type}</div>
+              <canvas width="64" height="64"/>
             </div>
           );
         }

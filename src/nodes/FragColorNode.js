@@ -9,7 +9,7 @@ function FragColorNode(options){
 	});
 }
 FragColorNode.prototype = Object.create(Node.prototype);
-FragColorNode.constructor = FragColorNode;
+FragColorNode.prototype.constructor = FragColorNode;
 
 Node.registerClass('fragColor', FragColorNode);
 

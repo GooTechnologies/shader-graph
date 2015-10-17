@@ -91,6 +91,7 @@
 	Node.classes = {};
 
 	Node.registerClass = function(key, constructor){
+		constructor.type = key;
 		Node.classes[key] = constructor;
 	};
 
@@ -152,13 +153,13 @@
 		}
 
 		// Check if they have a type in common
-		var outputTypes = targetNode.getOutputTypes(key);
+		var outputTypes = targetNode.getOutputTypes(targetPortKey);
 		var inputTypes = this.getInputTypes(key);
 		var hasSharedType = outputTypes.some(function(type){
 			return inputTypes.indexOf(type) !== -1;
 		});
 		if(!outputTypes.length || !inputTypes.length || !hasSharedType){
-			return 'the ports do not have a shared type.';
+			return 'the ports do not have a shared type. InputTypes: ' + inputTypes.join(',') + ', Outputtypes: ' + outputTypes.join(',');
 		}
 
 		if(targetNode.getOutputPorts().indexOf(targetPortKey) === -1){
@@ -168,6 +169,7 @@
 
 	Node.prototype.canConnect = function(key, targetNode, targetPortKey){
 		var errorMessage = this._getConnectError(key, targetNode, targetPortKey);
+		this.errorMessage = errorMessage;
 		return errorMessage ? false : true;
 	};
 
@@ -267,7 +269,7 @@
 		});
 	}
 	FragColorNode.prototype = Object.create(Node.prototype);
-	FragColorNode.constructor = FragColorNode;
+	FragColorNode.prototype.constructor = FragColorNode;
 
 	Node.registerClass('fragColor', FragColorNode);
 
@@ -322,7 +324,7 @@
 		});
 	}
 	PositionNode.prototype = Object.create(Node.prototype);
-	PositionNode.constructor = PositionNode;
+	PositionNode.prototype.constructor = PositionNode;
 
 	PositionNode.prototype.buildShader = function(){
 		return function(){
@@ -340,7 +342,7 @@
 					'}',
 				'}'
 			].join('\n');
-			
+
 		}.bind(this);
 	};
 
@@ -358,7 +360,7 @@
 		});
 	}
 	UberFragNode.prototype = Object.create(Node.prototype);
-	UberFragNode.constructor = UberFragNode;
+	UberFragNode.prototype.constructor = UberFragNode;
 
 	UberFragNode.prototype.getInputPorts = function(key){
 		return [
@@ -609,7 +611,7 @@
 		});
 	}
 	UberVertNode.prototype = Object.create(Node.prototype);
-	UberVertNode.constructor = UberVertNode;
+	UberVertNode.prototype.constructor = UberVertNode;
 
 	UberVertNode.prototype.canBuildShader = function(){
 		return true;
@@ -760,7 +762,7 @@
 					'}',
 				'}'
 			].join('\n');
-			
+
 		}.bind(this);
 	};
 
@@ -796,7 +798,7 @@
 		this.defaultValue = options.defaultValue ? options.defaultValue.slice(0) : [0,0,0,0];
 	}
 	Vector4Node.prototype = Object.create(Node.prototype);
-	Vector4Node.constructor = Vector4Node;
+	Vector4Node.prototype.constructor = Vector4Node;
 
 	Node.registerClass('vec4', Vector4Node);
 
@@ -854,7 +856,7 @@
 		this.value = options.value || 0;
 	}
 	ValueNode.prototype = Object.create(Node.prototype);
-	ValueNode.constructor = ValueNode;
+	ValueNode.prototype.constructor = ValueNode;
 
 	Node.registerClass('value', ValueNode);
 
@@ -889,7 +891,7 @@
 		});
 	}
 	UVNode.prototype = Object.create(Node.prototype);
-	UVNode.constructor = UVNode;
+	UVNode.prototype.constructor = UVNode;
 
 	Node.registerClass('uv', UVNode);
 
@@ -1008,7 +1010,7 @@
 		});
 	}
 	TimeNode.prototype = Object.create(Node.prototype);
-	TimeNode.constructor = TimeNode;
+	TimeNode.prototype.constructor = TimeNode;
 
 	Node.registerClass('time', TimeNode);
 
@@ -1061,7 +1063,7 @@
 		});
 	}
 	SineNode.prototype = Object.create(Node.prototype);
-	SineNode.constructor = SineNode;
+	SineNode.prototype.constructor = SineNode;
 
 	Node.registerClass('sine', SineNode);
 

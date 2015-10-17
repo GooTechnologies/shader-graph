@@ -163,125 +163,139 @@
     <script src="js/goo.js"></script>
     <script src="../build/shadergraph.js"></script>
     <script type="text/babel">
+    jsPlumb.ready(function () {
 
-    var shader = new ShaderGraph.GraphShader();
-    var fragmentGraph = shader.fragmentGraph;
-    var vertexGraph = shader.vertexGraph;
+        var shader = new ShaderGraph.GraphShader();
+        var fragmentGraph = shader.fragmentGraph;
+        var vertexGraph = shader.vertexGraph;
+        var instance;
 
-    var App = React.createClass({
-        getInitialState: function(){
-          return { connections: [], nodes: [] };
-        },
-        render: function() {
-          var nodeTypes = Object.keys(ShaderGraph.Node.classes);
-          var nodes = this.state.nodes.map(function(node){
-            // Add some input/output stuff
-            node.inputs = fragmentGraph.getNodeById(node.id).getInputPorts().map(function(key){
+        var App = React.createClass({
+            getInitialState: function(){
                 return {
-                    key: key
+                    connections: [],
+                    nodes: []
                 };
-            });
-            node.outputs = fragmentGraph.getNodeById(node.id).getOutputPorts().map(function(key){
-                return {
-                    key: key
-                };
-            });
-            return node;
-          });
-          return (
-            <div className="row">
-              <NodeSelectList nodeTypes={nodeTypes} addNode={this.addNode}/>
-              <NodeEditor
-                nodes={nodes}
-                connect={this.connect}
-                disconnect={this.disconnect} />
-            </div>
-          );
-        },
-        addNode: function(type){
-            var node = new ShaderGraph.Node.classes[type]();
-            shader.fragmentGraph.addNode(node);
-            var state = this.state;
-            state.nodes.push({
-                id: node.id,
-                type: type
-            });
-            this.setState(state);
-        },
-        connect: function(nodeA, outputA, nodeB, inputB){
-            var nA = shader.fragmentGraph.getNodeById(nodeA);
-            var nB = shader.fragmentGraph.getNodeById(nodeB);
-            if(!nA) throw new Error('couldnt find node ' + nodeA);
-            if(!nB) throw new Error('couldnt find node ' + nodeB);
-
-            if(!nB.canConnect(inputB, nA, outputA)){
-                return false;
-            }
-
-            var state = this.state;
-            state.connections.push({
-                nodeA: nodeA,
-                nodeB: nodeB,
-                outputA: outputA,
-                inputB: inputB
-            });
-            this.setState(state);
-
-            return true;
-        },
-        disconnect: function(nodeA, outputA, nodeB, inputB){
-          var state = this.state;
-          var connToRemove = state.connections.find(function(conn){
-            return (
-                conn.nodeA === nodeA &&
-                conn.nodeB === nodeB &&
-                conn.outputA === outputA &&
-                conn.inputB === inputB
-            );
-          });
-            var idx = state.connections.indexOf(connToRemove);
-            if(idx !== -1){
-                state.connections.splice(idx, 1);
-            }
-          this.setState(state);
-        }
-      });
-
-      var NodeSelectList = React.createClass({
-        render: function() {
-          var items = this.props.nodeTypes.map(function (type) {
-            return (
-                <AddNodeButton key={type} addNode={this.props.addNode} type={type}/>
-            );
-          }, this);
-          return (
-            <div className="col-xs-3">
-                <div className="list-group">
-                  {items}
+            },
+            render: function() {
+              var nodeTypes = Object.keys(ShaderGraph.Node.classes);
+              var nodes = this.state.nodes.map(function(node){
+                // Add some input/output stuff
+                node.inputs = fragmentGraph.getNodeById(node.id).getInputPorts().map(function(key){
+                    return {
+                        key: key
+                    };
+                });
+                node.outputs = fragmentGraph.getNodeById(node.id).getOutputPorts().map(function(key){
+                    return {
+                        key: key
+                    };
+                });
+                return node;
+              });
+              return (
+                <div className="row">
+                  <NodeSelectList nodeTypes={nodeTypes} addNode={this.addNode}/>
+                  <NodeEditor
+                    nodes={nodes}
+                    connect={this.connect}
+                    disconnect={this.disconnect}
+                    addMainNode={this.addMainNode} />
                 </div>
-            </div>
-          );
-        }
-      });
+              );
+            },
+            addMainNode: function(){
+                this.state.nodes.push({
+                    id: fragmentGraph.mainNode.id,
+                    type: fragmentGraph.mainNode.constructor.type
+                });
+                this.setState(this.state);
+            },
+            addNode: function(type){
+                var node = new ShaderGraph.Node.classes[type]();
+                shader.fragmentGraph.addNode(node);
+                var state = this.state;
+                state.nodes.push({
+                    id: node.id,
+                    type: type
+                });
+                this.setState(state);
+            },
+            connect: function(nodeA, outputA, nodeB, inputB){
+                var nA = shader.fragmentGraph.getNodeById(nodeA);
+                var nB = shader.fragmentGraph.getNodeById(nodeB);
+                if(!nA) throw new Error('couldnt find node ' + nodeA);
+                if(!nB) throw new Error('couldnt find node ' + nodeB);
 
-      var AddNodeButton = React.createClass({
-        render: function() {
-          return (
-            <a className="list-group-item add-node-button" onClick={this.handleClick}>{this.props.type}</a>
-          );
-        },
-        handleClick: function(){
-          this.props.addNode(this.props.type);
-        }
-      });
+                if(!nB.canConnect(inputB, nA, outputA)){
+                    console.warn(nB.errorMessage);
+                    return false;
+                }
 
-      var NodeEditor = React.createClass({
-        componentDidMount: function(){
-            var component = this;
-            jsPlumb.ready(function () {
+                var state = this.state;
+                state.connections.push({
+                    nodeA: nodeA,
+                    nodeB: nodeB,
+                    outputA: outputA,
+                    inputB: inputB
+                });
+                this.setState(state);
+
+                return true;
+            },
+            disconnect: function(nodeA, outputA, nodeB, inputB){
+              var state = this.state;
+              var connToRemove = state.connections.find(function(conn){
+                return (
+                    conn.nodeA === nodeA &&
+                    conn.nodeB === nodeB &&
+                    conn.outputA === outputA &&
+                    conn.inputB === inputB
+                );
+              });
+                var idx = state.connections.indexOf(connToRemove);
+                if(idx !== -1){
+                    state.connections.splice(idx, 1);
+                }
+              this.setState(state);
+            }
+          });
+
+          var NodeSelectList = React.createClass({
+            render: function() {
+              var items = this.props.nodeTypes.map(function (type) {
+                return (
+                    <AddNodeButton key={type} addNode={this.props.addNode} type={type}/>
+                );
+              }, this);
+              return (
+                <div className="col-xs-3">
+                    <div className="list-group">
+                      {items}
+                    </div>
+                </div>
+              );
+            }
+          });
+
+          var AddNodeButton = React.createClass({
+            render: function() {
+              return (
+                <a className="list-group-item add-node-button" onClick={this.handleClick}>{this.props.type}</a>
+              );
+            },
+            handleClick: function(){
+              this.props.addNode(this.props.type);
+            }
+          });
+
+          var NodeEditor = React.createClass({
+            componentDidMount: function(){
+
+                var component = this;
 
                 // setup some defaults for jsPlumb.
-                var instance = component.instance = jsPlumb.getInstance({
+                instance = jsPlumb.getInstance({
                     Endpoint: ["Dot", {radius: 0.00001}],
                     Connector:"StateMachine",
                     HoverPaintStyle: {
@@ -304,8 +318,6 @@
                   connector:"StateMachine"
                 });
 
-                var canvas = document.getElementById("canvas");
-
                 function getConnectionInfo(info){
                     return {
                         nodeA: info.source.parentNode.parentNode.attributes['data-node-id'].value,
@@ -327,18 +339,39 @@
                     }
                 });
 
-                // instance.bind("connectionDetach", function() {
-                //     console.log("DETACH!")
-                // })
+                // suspend drawing and initialise.
+                instance.batch(function () {
+                    // instance.connect({ source: "opened", target: "phone1", type:"basic" });
+                    // instance.connect({ source: "phone1", target: "inperson", type:"basic" });
+                    //
+                    this.props.addMainNode();
 
-                // initialise element as connection targets and source.
-                var initNode = function(el) {
-                    var ep = el.querySelector('.ep');
+                }.bind(this));
+            },
+            render: function() {
+              var nodes = this.props.nodes;
+              return (
+                <div className="col-xs-9">
+                    <div className="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
+                      {nodes.map(function(node) {
+                        return <Node instance={instance} key={node.id} data={node} />;
+                      }, this)}
+                    </div>
+                </div>
+              );
+            }
+          });
 
-                    // initialise draggable elements.
-                    instance.draggable(el);
+          var Node = React.createClass({
+            componentDidMount: function(){
+                var el = ReactDOM.findDOMNode(this);
+                this.props.instance.draggable(el);
 
-                    instance.makeSource(ep, {
+                var eps = el.querySelectorAll('.out, .in');
+                for(var i=0; i<eps.length; i++){
+                    var ep = eps[i];
+
+                    this.props.instance.makeSource(ep, {
                         anchor: "Continuous",
                         connectorStyle: {
                           strokeStyle: "black",
@@ -349,122 +382,50 @@
                         maxConnections: 1,
                         connectionType:"basic",
                         onMaxConnections: function (info, e) {
-                            alert("Maximum connections (" + info.maxConnections + ") reached");
+                            console.error("Maximum connections (" + info.maxConnections + ") reached");
                         },
                         extract:{
                             "action": "the-action"
                         }
                     });
 
-                    instance.makeTarget(ep, {
+                    this.props.instance.makeTarget(ep, {
                         dropOptions: { hoverClass: "dragHover" },
                         anchor: "Continuous",
                         allowLoopback: false
                     });
-                };
-
-                // var newNode = function(x, y) {
-                //     var d = document.createElement("div");
-                //     var id = jsPlumbUtil.uuid();
-                //     d.className = "w";
-                //     d.id = id;
-                //     d.innerHTML = id.substring(0, 7) + "<div class=\"ep\">RGBA</div>";
-                //     d.style.left = x + "px";
-                //     d.style.top = y + "px";
-                //     instance.getContainer().appendChild(d);
-                //     initNode(d);
-                //     return d;
-                // };
-
-                // suspend drawing and initialise.
-                instance.batch(function () {
-                    // for (var i = 0; i < windows.length; i++) {
-                    //     initNode(windows[i], true);
-                    // }
-
-                    // instance.connect({ source: "opened", target: "phone1", type:"basic" });
-                    // instance.connect({ source: "phone1", target: "inperson", type:"basic" });
+                }
+            },
+            render: function() {
+                var inputs = this.props.data.inputs.map(function(input){
+                    return (
+                        <div className="in" key={input.key}>{input.key}</div>
+                    );
                 });
-            });
-        },
-        render: function() {
-          var nodes = this.props.nodes;
-          return (
-            <div className="col-xs-9">
-                <div className="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
-                  {nodes.map(function(node) {
-                    return <Node instance={this.instance} key={node.id} data={node} />;
-                  }, this)}
-                </div>
-            </div>
-          );
-        }
-      });
-
-      var Node = React.createClass({
-        componentDidMount: function(){
-            var el = ReactDOM.findDOMNode(this);
-            this.props.instance.draggable(el);
-
-            var eps = el.querySelectorAll('.out, .in');
-            for(var i=0; i<eps.length; i++){
-                var ep = eps[i];
-
-                this.props.instance.makeSource(ep, {
-                    anchor: "Continuous",
-                    connectorStyle: {
-                      strokeStyle: "black",
-                      lineWidth: 2,
-                      outlineColor: "transparent",
-                      outlineWidth: 4
-                    },
-                    maxConnections: 1,
-                    connectionType:"basic",
-                    onMaxConnections: function (info, e) {
-                        console.error("Maximum connections (" + info.maxConnections + ") reached");
-                    },
-                    extract:{
-                        "action": "the-action"
-                    }
+                var outputs = this.props.data.outputs.map(function(output){
+                    return (
+                        <div className="out" key={output.key}>{output.key}</div>
+                    );
                 });
-
-                this.props.instance.makeTarget(ep, {
-                    dropOptions: { hoverClass: "dragHover" },
-                    anchor: "Continuous",
-                    allowLoopback: false
-                });
+                return (
+                    <div className="w" data-node-id={this.props.data.id}>
+                        <div className="title">{this.props.data.type}</div>
+                        <div className="inputs">
+                            {inputs}
+                        </div>
+                        <div className="outputs">
+                            {outputs}
+                        </div>
+                    </div>
+                );
             }
-        },
-        render: function() {
-            var inputs = this.props.data.inputs.map(function(input){
-                return (
-                    <div className="in" key={input.key}>{input.key}</div>
-                );
-            });
-            var outputs = this.props.data.outputs.map(function(output){
-                return (
-                    <div className="out" key={output.key}>{output.key}</div>
-                );
-            });
-            return (
-                <div className="w" data-node-id={this.props.data.id}>
-                    <div className="title">{this.props.data.type} {this.props.data.id}</div>
-                    <div className="inputs">
-                        {inputs}
-                    </div>
-                    <div className="outputs">
-                        {outputs}
-                    </div>
-                </div>
-            );
-        }
-      });
+          });
 
-      ReactDOM.render(
-        <App />,
-        document.getElementById('content')
-      );
-
+          ReactDOM.render(
+            <App />,
+            document.getElementById('content')
+          );
+        });
     </script>
   </body>
 </html>

@@ -10,7 +10,7 @@ function SineNode(options){
 	});
 }
 SineNode.prototype = Object.create(Node.prototype);
-SineNode.constructor = SineNode;
+SineNode.prototype.constructor = SineNode;
 
 Node.registerClass('sine', SineNode);
 

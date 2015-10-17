@@ -8,7 +8,7 @@ function UberFragNode(){
 	});
 }
 UberFragNode.prototype = Object.create(Node.prototype);
-UberFragNode.constructor = UberFragNode;
+UberFragNode.prototype.constructor = UberFragNode;
 
 UberFragNode.prototype.getInputPorts = function(key){
 	return [

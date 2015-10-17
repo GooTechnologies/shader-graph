@@ -12,7 +12,7 @@ function Vector4PropertyNode(options){
 	this.defaultValue = options.defaultValue ? options.defaultValue.slice(0) : [0,0,0,0];
 }
 Vector4PropertyNode.prototype = Object.create(Node.prototype);
-Vector4PropertyNode.constructor = Vector4PropertyNode;
+Vector4PropertyNode.prototype.constructor = Vector4PropertyNode;
 
 Node.registerClass('vec4prop', Vector4PropertyNode);
 

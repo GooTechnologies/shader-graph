@@ -11,7 +11,7 @@ function TimeNode(options){
 	});
 }
 TimeNode.prototype = Object.create(Node.prototype);
-TimeNode.constructor = TimeNode;
+TimeNode.prototype.constructor = TimeNode;
 
 Node.registerClass('time', TimeNode);
 

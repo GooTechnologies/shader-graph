@@ -9,7 +9,7 @@ function UberVertNode(){
 	});
 }
 UberVertNode.prototype = Object.create(Node.prototype);
-UberVertNode.constructor = UberVertNode;
+UberVertNode.prototype.constructor = UberVertNode;
 
 UberVertNode.prototype.canBuildShader = function(){
 	return true;
@@ -160,6 +160,6 @@ UberVertNode.prototype.buildShader = function(){
 				'}',
 			'}'
 		].join('\n');
-		
+
 	}.bind(this);
 };

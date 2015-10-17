@@ -12,7 +12,7 @@ function UVNode(options){
 	});
 }
 UVNode.prototype = Object.create(Node.prototype);
-UVNode.constructor = UVNode;
+UVNode.prototype.constructor = UVNode;
 
 Node.registerClass('uv', UVNode);
 

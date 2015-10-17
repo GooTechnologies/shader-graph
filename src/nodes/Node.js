@@ -14,6 +14,7 @@ Node._idCounter = 1;
 Node.classes = {};
 
 Node.registerClass = function(key, constructor){
+	constructor.type = key;
 	Node.classes[key] = constructor;
 };
 
@@ -75,13 +76,13 @@ Node.prototype._getConnectError = function(key, targetNode, targetPortKey){
 	}
 
 	// Check if they have a type in common
-	var outputTypes = targetNode.getOutputTypes(key);
+	var outputTypes = targetNode.getOutputTypes(targetPortKey);
 	var inputTypes = this.getInputTypes(key);
 	var hasSharedType = outputTypes.some(function(type){
 		return inputTypes.indexOf(type) !== -1;
 	});
 	if(!outputTypes.length || !inputTypes.length || !hasSharedType){
-		return 'the ports do not have a shared type.';
+		return 'the ports do not have a shared type. InputTypes: ' + inputTypes.join(',') + ', Outputtypes: ' + outputTypes.join(',');
 	}
 
 	if(targetNode.getOutputPorts().indexOf(targetPortKey) === -1){
@@ -91,6 +92,7 @@ Node.prototype._getConnectError = function(key, targetNode, targetPortKey){
 
 Node.prototype.canConnect = function(key, targetNode, targetPortKey){
 	var errorMessage = this._getConnectError(key, targetNode, targetPortKey);
+	this.errorMessage = errorMessage;
 	return errorMessage ? false : true;
 };
 

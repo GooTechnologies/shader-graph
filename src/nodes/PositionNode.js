@@ -9,7 +9,7 @@ function PositionNode(options){
 	});
 }
 PositionNode.prototype = Object.create(Node.prototype);
-PositionNode.constructor = PositionNode;
+PositionNode.prototype.constructor = PositionNode;
 
 PositionNode.prototype.buildShader = function(){
 	return function(){
@@ -27,6 +27,6 @@ PositionNode.prototype.buildShader = function(){
 				'}',
 			'}'
 		].join('\n');
-		
+
 	}.bind(this);
 };

@@ -12,7 +12,7 @@ function ValueNode(options){
 	this.value = options.value || 0;
 }
 ValueNode.prototype = Object.create(Node.prototype);
-ValueNode.constructor = ValueNode;
+ValueNode.prototype.constructor = ValueNode;
 
 Node.registerClass('value', ValueNode);
 

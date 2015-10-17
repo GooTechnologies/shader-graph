@@ -14,6 +14,8 @@ function Vector4PropertyNode(options){
 Vector4PropertyNode.prototype = Object.create(Node.prototype);
 Vector4PropertyNode.constructor = Vector4PropertyNode;
 
+Node.registerClass('vec4prop', Vector4PropertyNode);
+
 Vector4PropertyNode.prototype.getOutputPorts = function(key){
 	return [
 		'rgba'

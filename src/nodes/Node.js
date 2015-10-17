@@ -11,6 +11,12 @@ function Node(options){
 
 Node._idCounter = 1;
 
+Node.classes = {};
+
+Node.registerClass = function(key, constructor){
+	Node.classes[key] = constructor;
+};
+
 Node.prototype.getInputPorts = function(key){
 	return [];
 };
@@ -67,10 +73,21 @@ Node.prototype._getConnectError = function(key, targetNode, targetPortKey){
 	if(this.getInputPorts().indexOf(key) === -1){
 		return this.name + ' does not have input port ' + key;
 	}
+
+	// Check if they have a type in common
+	var outputTypes = targetNode.getOutputTypes(key);
+	var inputTypes = this.getInputTypes(key);
+	var hasSharedType = outputTypes.some(function(type){
+		return inputTypes.indexOf(type) !== -1;
+	});
+	if(!outputTypes.length || !inputTypes.length || !hasSharedType){
+		return 'the ports do not have a shared type.';
+	}
+
 	if(targetNode.getOutputPorts().indexOf(targetPortKey) === -1){
 		return targetNode.name + ' does not have output port ' + targetPortKey;
 	}
-}
+};
 
 Node.prototype.canConnect = function(key, targetNode, targetPortKey){
 	var errorMessage = this._getConnectError(key, targetNode, targetPortKey);
@@ -135,7 +152,7 @@ Node.prototype.buildShader = function(){
 				'}',
 			'}'
 		].join('\n');
-		
+
 	}.bind(this);
 };
 

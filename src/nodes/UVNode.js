@@ -14,6 +14,8 @@ function UVNode(options){
 UVNode.prototype = Object.create(Node.prototype);
 UVNode.constructor = UVNode;
 
+Node.registerClass('uv', UVNode);
+
 UVNode.prototype.getOutputPorts = function(key){
 	return [
 		'uv',
@@ -68,12 +70,12 @@ UVNode.prototype.render = function(){
 	if(uvVarName){
 		source.push(uvVarName + ' = texCoord0;');
 	}
-	
+
 	var uVarName = this.getOutputVariableNames('u')[0];
 	if(uVarName){
 		source.push(uVarName + ' = texCoord0.x;');
 	}
-	
+
 	var vVarName = this.getOutputVariableNames('v')[0];
 	if(vVarName){
 		source.push(vVarName + ' = texCoord0.y;');

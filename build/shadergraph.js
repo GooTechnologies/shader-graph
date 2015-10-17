@@ -88,6 +88,12 @@
 
 	Node._idCounter = 1;
 
+	Node.classes = {};
+
+	Node.registerClass = function(key, constructor){
+		Node.classes[key] = constructor;
+	};
+
 	Node.prototype.getInputPorts = function(key){
 		return [];
 	};
@@ -144,10 +150,21 @@
 		if(this.getInputPorts().indexOf(key) === -1){
 			return this.name + ' does not have input port ' + key;
 		}
+
+		// Check if they have a type in common
+		var outputTypes = targetNode.getOutputTypes(key);
+		var inputTypes = this.getInputTypes(key);
+		var hasSharedType = outputTypes.some(function(type){
+			return inputTypes.indexOf(type) !== -1;
+		});
+		if(!outputTypes.length || !inputTypes.length || !hasSharedType){
+			return 'the ports do not have a shared type.';
+		}
+
 		if(targetNode.getOutputPorts().indexOf(targetPortKey) === -1){
 			return targetNode.name + ' does not have output port ' + targetPortKey;
 		}
-	}
+	};
 
 	Node.prototype.canConnect = function(key, targetNode, targetPortKey){
 		var errorMessage = this._getConnectError(key, targetNode, targetPortKey);
@@ -212,7 +229,7 @@
 					'}',
 				'}'
 			].join('\n');
-			
+
 		}.bind(this);
 	};
 
@@ -252,8 +269,14 @@
 	FragColorNode.prototype = Object.create(Node.prototype);
 	FragColorNode.constructor = FragColorNode;
 
+	Node.registerClass('fragColor', FragColorNode);
+
 	FragColorNode.prototype.getInputPorts = function(key){
 		return ['rgba'];
+	};
+
+	FragColorNode.prototype.getInputTypes = function(key){
+		return ['vec4'];
 	};
 
 	FragColorNode.prototype.getInputVarNames = function(key){
@@ -280,7 +303,7 @@
 					'}',
 				'}'
 			].join('\n');
-			
+
 		}.bind(this);
 	};
 
@@ -567,7 +590,7 @@
 					'}',
 				'}'
 			].join('\n');
-			
+
 		}.bind(this);
 	};
 
@@ -775,11 +798,13 @@
 	Vector4Node.prototype = Object.create(Node.prototype);
 	Vector4Node.constructor = Vector4Node;
 
-	Vector4Node.prototype.getInputPorts = function(key){
+	Node.registerClass('vec4', Vector4Node);
+
+	Vector4Node.prototype.getInputPorts = function(){
 		return ['r', 'g', 'b', 'a'];
 	};
 
-	Vector4Node.prototype.getOutputPorts = function(key){
+	Vector4Node.prototype.getOutputPorts = function(){
 		return ['rgba'];
 	};
 
@@ -831,6 +856,8 @@
 	ValueNode.prototype = Object.create(Node.prototype);
 	ValueNode.constructor = ValueNode;
 
+	Node.registerClass('value', ValueNode);
+
 	ValueNode.prototype.getOutputPorts = function(key){
 		return ['value'];
 	};
@@ -863,6 +890,8 @@
 	}
 	UVNode.prototype = Object.create(Node.prototype);
 	UVNode.constructor = UVNode;
+
+	Node.registerClass('uv', UVNode);
 
 	UVNode.prototype.getOutputPorts = function(key){
 		return [
@@ -918,12 +947,12 @@
 		if(uvVarName){
 			source.push(uvVarName + ' = texCoord0;');
 		}
-		
+
 		var uVarName = this.getOutputVariableNames('u')[0];
 		if(uVarName){
 			source.push(uVarName + ' = texCoord0.x;');
 		}
-		
+
 		var vVarName = this.getOutputVariableNames('v')[0];
 		if(vVarName){
 			source.push(vVarName + ' = texCoord0.y;');
@@ -981,6 +1010,8 @@
 	TimeNode.prototype = Object.create(Node.prototype);
 	TimeNode.constructor = TimeNode;
 
+	Node.registerClass('time', TimeNode);
+
 	TimeNode.prototype.getOutputPorts = function(key){
 		return ['time'];
 	};
@@ -1031,6 +1062,8 @@
 	}
 	SineNode.prototype = Object.create(Node.prototype);
 	SineNode.constructor = SineNode;
+
+	Node.registerClass('sine', SineNode);
 
 	SineNode.prototype.getInputPorts = function(key){
 		return ['x'];
@@ -1110,6 +1143,12 @@
 			this.nodes.splice(index, 1);
 			node.graph = null;
 		}
+	};
+
+	Graph.prototype.getNodeById = function(id){
+		return this.nodes.find(function(node){
+			return node.id == id;
+		});
 	};
 
 	Graph.prototype.addConnection = function(conn){

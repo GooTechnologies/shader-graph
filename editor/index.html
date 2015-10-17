@@ -2,33 +2,71 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>React Tutorial</title>
+    <title>Node Editor</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
     <style>
+
+    html {
+        height: 100%;
+    }
+
+    body {
+        margin: auto;
+        height: 100%;
+    }
+
+    .add-node-button {
+        cursor: pointer;
+    }
+
+    /* Bootstrap */
+    .container-full {
+        padding: 0 15px;
+        margin: 0 auto;
+        width: 100%;
+        min-height: 100%;
+    }
 
       /* jsplumb start */
       #canvas {
-        width: 600px;
-        height: 400px;
+        width: 100%;
+        max-height: 100%;
+        height: 600px;
+        margin: auto;
         position: relative;
-        background-color: #eee;
       }
 
       .demo {
-          /* for IE10+ touch devices */
           touch-action:none;
       }
 
       .w {
-          padding: 5px;
-          text-align: center;
+          padding: 0;
           position: absolute;
           z-index: 4;
           border: 1px solid black;
-          cursor: move;
           background-color: white;
           font-size: 11px;
           min-width: 100px;
           min-height: 100px;
+          border-radius: 4px;
+      }
+
+        .w .out, .w .in {
+            cursor: pointer;
+            margin: 3px;
+        }
+
+        .w .out {
+            text-align: right;
+        }
+
+      .w .title {
+        cursor: move;
+        text-align: center;
+        padding:5px;
+        background-color: black;
+        color: white;
       }
 
       .w:hover {
@@ -95,160 +133,116 @@
     </style>
   </head>
   <body>
-    <h1>ShaderGraph Editor</h1>
 
-    <div id="content"></div>
-
-    <div class="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
-        <div class="w" id="opened">BEGIN
-            <div class="ep" action="begin"></div>
+    <nav class="navbar navbar-inverse navbar-default navbar-static-top">
+      <div class="container-full">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Node Editor</a>
         </div>
-        <div class="w" id="phone1">PHONE INTERVIEW 1
-            <div class="ep" action="phone1"></div>
-        </div>
-        <div class="w" id="inperson">IN PERSON
-            <div class="ep" action="inperson"></div>
-        </div>
-    </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
 
-    <script type="text/javascript" src="js/jsplumb.js"></script>
-    <script type="text/javascript">
-    jsPlumb.ready(function () {
+    <div id="content" class="container-full"></div>
 
-    // setup some defaults for jsPlumb.
-    var instance = jsPlumb.getInstance({
-        Endpoint: ["Dot", {radius: 0.00001}],
-        Connector:"StateMachine",
-        HoverPaintStyle: {
-          strokeStyle: "#ddd",
-          lineWidth: 2
-        },
-        ConnectionOverlays: [
-            [ "Arrow", {
-                location: 1,
-                id: "arrow",
-                length: 14,
-                foldback: 1
-            } ]
-        ],
-        Container: "canvas"
-    });
-
-    instance.registerConnectionType("basic", { anchor:"Continuous", connector:"StateMachine" });
-
-    var canvas = document.getElementById("canvas");
-    var windows = jsPlumb.getSelector(".statemachine-demo .w");
-
-    // bind a click listener to each connection; the connection is deleted. you could of course
-    // just do this: jsPlumb.bind("click", jsPlumb.detach), but I wanted to make it clear what was
-    // happening.
-    instance.bind("click", function (c) {
-        instance.detach(c);
-    });
-
-    // bind a connection listener. note that the parameter passed to this function contains more than
-    // just the new connection - see the documentation for a full list of what is included in 'info'.
-    // this listener sets the connection's internal
-    // id as the label overlay's text.
-    instance.bind("connection", function (info) {
-        //info.connection.getOverlay("label").setLabel(info.connection.id);
-        console.log('connect');
-    });
-
-    instance.bind("connectionDetach", function() {
-        console.log("DETACH!")
-    })
-
-    // bind a double click listener to "canvas"; add new node when this occurs.
-    jsPlumb.on(canvas, "dblclick", function(e) {
-        newNode(e.offsetX, e.offsetY);
-    });
-
-    // initialise element as connection targets and source.
-    var initNode = function(el) {
-        var ep = el.querySelector('.ep');
-
-        // initialise draggable elements.
-        instance.draggable(el);
-
-        instance.makeSource(ep, {
-            //filter: ".ep",
-            anchor: "Continuous",
-            connectorStyle: {
-              strokeStyle: "black",
-              lineWidth: 2,
-              outlineColor: "transparent",
-              outlineWidth: 4
-            },
-            maxConnections: 1,
-            connectionType:"basic",
-            onMaxConnections: function (info, e) {
-                alert("Maximum connections (" + info.maxConnections + ") reached");
-            },
-            extract:{
-                "action": "the-action"
-            }
-        });
-
-        instance.makeTarget(ep, {
-            dropOptions: { hoverClass: "dragHover" },
-            anchor: "Continuous",
-            allowLoopback: false
-        });
-    };
-
-    var newNode = function(x, y) {
-        var d = document.createElement("div");
-        var id = jsPlumbUtil.uuid();
-        d.className = "w";
-        d.id = id;
-        d.innerHTML = id.substring(0, 7) + "<div class=\"ep\">RGBA</div>";
-        d.style.left = x + "px";
-        d.style.top = y + "px";
-        instance.getContainer().appendChild(d);
-        initNode(d);
-        return d;
-    };
-
-    // suspend drawing and initialise.
-    instance.batch(function () {
-        for (var i = 0; i < windows.length; i++) {
-            initNode(windows[i], true);
-        }
-
-        // instance.connect({ source: "opened", target: "phone1", type:"basic" });
-        // instance.connect({ source: "phone1", target: "inperson", type:"basic" });
-    });
-
-});
-</script>
-
-
+    <script src="js/jsplumb.js"></script>
     <script src="js/react.js"></script>
     <script src="js/react-dom.js"></script>
     <script src="js/browser.min.js"></script>
     <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/goo.js"></script>
+    <script src="../build/shadergraph.js"></script>
     <script type="text/babel">
 
-      var App = React.createClass({
+    var shader = new ShaderGraph.GraphShader();
+    var fragmentGraph = shader.fragmentGraph;
+    var vertexGraph = shader.vertexGraph;
+
+    var App = React.createClass({
         getInitialState: function(){
           return { connections: [], nodes: [] };
         },
         render: function() {
-          var nodeTypes = ['sin','time'];
+          var nodeTypes = Object.keys(ShaderGraph.Node.classes);
+          var nodes = this.state.nodes.map(function(node){
+            // Add some input/output stuff
+            node.inputs = fragmentGraph.getNodeById(node.id).getInputPorts().map(function(key){
+                return {
+                    key: key
+                };
+            });
+            node.outputs = fragmentGraph.getNodeById(node.id).getOutputPorts().map(function(key){
+                return {
+                    key: key
+                };
+            });
+            return node;
+          });
           return (
-            <div>
+            <div className="row">
               <NodeSelectList nodeTypes={nodeTypes} addNode={this.addNode}/>
-              <NodeEditor nodes={this.state.nodes}/>
+              <NodeEditor
+                nodes={nodes}
+                connect={this.connect}
+                disconnect={this.disconnect} />
             </div>
           );
         },
         addNode: function(type){
+            var node = new ShaderGraph.Node.classes[type]();
+            shader.fragmentGraph.addNode(node);
+            var state = this.state;
+            state.nodes.push({
+                id: node.id,
+                type: type
+            });
+            this.setState(state);
+        },
+        connect: function(nodeA, outputA, nodeB, inputB){
+            var nA = shader.fragmentGraph.getNodeById(nodeA);
+            var nB = shader.fragmentGraph.getNodeById(nodeB);
+            if(!nA) throw new Error('couldnt find node ' + nodeA);
+            if(!nB) throw new Error('couldnt find node ' + nodeB);
+
+            if(!nB.canConnect(inputB, nA, outputA)){
+                return false;
+            }
+
+            var state = this.state;
+            state.connections.push({
+                nodeA: nodeA,
+                nodeB: nodeB,
+                outputA: outputA,
+                inputB: inputB
+            });
+            this.setState(state);
+
+            return true;
+        },
+        disconnect: function(nodeA, outputA, nodeB, inputB){
           var state = this.state;
-          state.nodes.push({
-            id: Math.random(),
-            type: type
+          var connToRemove = state.connections.find(function(conn){
+            return (
+                conn.nodeA === nodeA &&
+                conn.nodeB === nodeB &&
+                conn.outputA === outputA &&
+                conn.inputB === inputB
+            );
           });
+            var idx = state.connections.indexOf(connToRemove);
+            if(idx !== -1){
+                state.connections.splice(idx, 1);
+            }
           this.setState(state);
         }
       });
@@ -257,15 +251,15 @@
         render: function() {
           var items = this.props.nodeTypes.map(function (type) {
             return (
-              <li key={type}>
-                <AddNodeButton addNode={this.props.addNode} type={type}/>
-              </li>
+                <AddNodeButton key={type} addNode={this.props.addNode} type={type}/>
             );
           }, this);
           return (
-            <ul>
-              {items}
-            </ul>
+            <div className="col-xs-3">
+                <div className="list-group">
+                  {items}
+                </div>
+            </div>
           );
         }
       });
@@ -273,7 +267,7 @@
       var AddNodeButton = React.createClass({
         render: function() {
           return (
-            <button onClick={this.handleClick}>{this.props.type}</button>
+            <a className="list-group-item add-node-button" onClick={this.handleClick}>{this.props.type}</a>
           );
         },
         handleClick: function(){
@@ -282,26 +276,187 @@
       });
 
       var NodeEditor = React.createClass({
+        componentDidMount: function(){
+            var component = this;
+            jsPlumb.ready(function () {
+
+                // setup some defaults for jsPlumb.
+                var instance = component.instance = jsPlumb.getInstance({
+                    Endpoint: ["Dot", {radius: 0.00001}],
+                    Connector:"StateMachine",
+                    HoverPaintStyle: {
+                      strokeStyle: "#ddd",
+                      lineWidth: 2
+                    },
+                    ConnectionOverlays: [
+                        [ "Arrow", {
+                            location: 1,
+                            id: "arrow",
+                            length: 10,
+                            foldback: 1
+                        } ]
+                    ],
+                    Container: "canvas"
+                });
+
+                instance.registerConnectionType("basic", {
+                  anchor:"Continuous",
+                  connector:"StateMachine"
+                });
+
+                var canvas = document.getElementById("canvas");
+
+                function getConnectionInfo(info){
+                    return {
+                        nodeA: info.source.parentNode.parentNode.attributes['data-node-id'].value,
+                        nodeB: info.target.parentNode.parentNode.attributes['data-node-id'].value,
+                        outputA: info.source.innerHTML,
+                        inputB: info.target.innerHTML
+                    };
+                }
+                instance.bind("click", function (c) {
+                    var info = getConnectionInfo(c);
+                    component.props.disconnect(info.nodeA, info.outputA, info.nodeB, info.inputB);
+                    instance.detach(c);
+                });
+
+                instance.bind("connection", function (c) {
+                    var info = getConnectionInfo(c);
+                    if(!component.props.connect(info.nodeA, info.outputA, info.nodeB, info.inputB)){
+                        instance.detach(c);
+                    }
+                });
+
+                // instance.bind("connectionDetach", function() {
+                //     console.log("DETACH!")
+                // })
+
+                // initialise element as connection targets and source.
+                var initNode = function(el) {
+                    var ep = el.querySelector('.ep');
+
+                    // initialise draggable elements.
+                    instance.draggable(el);
+
+                    instance.makeSource(ep, {
+                        anchor: "Continuous",
+                        connectorStyle: {
+                          strokeStyle: "black",
+                          lineWidth: 2,
+                          outlineColor: "transparent",
+                          outlineWidth: 4
+                        },
+                        maxConnections: 1,
+                        connectionType:"basic",
+                        onMaxConnections: function (info, e) {
+                            alert("Maximum connections (" + info.maxConnections + ") reached");
+                        },
+                        extract:{
+                            "action": "the-action"
+                        }
+                    });
+
+                    instance.makeTarget(ep, {
+                        dropOptions: { hoverClass: "dragHover" },
+                        anchor: "Continuous",
+                        allowLoopback: false
+                    });
+                };
+
+                // var newNode = function(x, y) {
+                //     var d = document.createElement("div");
+                //     var id = jsPlumbUtil.uuid();
+                //     d.className = "w";
+                //     d.id = id;
+                //     d.innerHTML = id.substring(0, 7) + "<div class=\"ep\">RGBA</div>";
+                //     d.style.left = x + "px";
+                //     d.style.top = y + "px";
+                //     instance.getContainer().appendChild(d);
+                //     initNode(d);
+                //     return d;
+                // };
+
+                // suspend drawing and initialise.
+                instance.batch(function () {
+                    // for (var i = 0; i < windows.length; i++) {
+                    //     initNode(windows[i], true);
+                    // }
+
+                    // instance.connect({ source: "opened", target: "phone1", type:"basic" });
+                    // instance.connect({ source: "phone1", target: "inperson", type:"basic" });
+                });
+            });
+        },
         render: function() {
           var nodes = this.props.nodes;
           return (
-            <div>
-              {nodes.map(function(node) {
-                return <Node key={node.id} data={node} />;
-              })}
+            <div className="col-xs-9">
+                <div className="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
+                  {nodes.map(function(node) {
+                    return <Node instance={this.instance} key={node.id} data={node} />;
+                  }, this)}
+                </div>
             </div>
           );
         }
       });
 
       var Node = React.createClass({
+        componentDidMount: function(){
+            var el = ReactDOM.findDOMNode(this);
+            this.props.instance.draggable(el);
+
+            var eps = el.querySelectorAll('.out, .in');
+            for(var i=0; i<eps.length; i++){
+                var ep = eps[i];
+
+                this.props.instance.makeSource(ep, {
+                    anchor: "Continuous",
+                    connectorStyle: {
+                      strokeStyle: "black",
+                      lineWidth: 2,
+                      outlineColor: "transparent",
+                      outlineWidth: 4
+                    },
+                    maxConnections: 1,
+                    connectionType:"basic",
+                    onMaxConnections: function (info, e) {
+                        console.error("Maximum connections (" + info.maxConnections + ") reached");
+                    },
+                    extract:{
+                        "action": "the-action"
+                    }
+                });
+
+                this.props.instance.makeTarget(ep, {
+                    dropOptions: { hoverClass: "dragHover" },
+                    anchor: "Continuous",
+                    allowLoopback: false
+                });
+            }
+        },
         render: function() {
-          return (
-            <div>
-              <div>{this.props.data.type}</div>
-              <canvas width="64" height="64"/>
-            </div>
-          );
+            var inputs = this.props.data.inputs.map(function(input){
+                return (
+                    <div className="in" key={input.key}>{input.key}</div>
+                );
+            });
+            var outputs = this.props.data.outputs.map(function(output){
+                return (
+                    <div className="out" key={output.key}>{output.key}</div>
+                );
+            });
+            return (
+                <div className="w" data-node-id={this.props.data.id}>
+                    <div className="title">{this.props.data.type} {this.props.data.id}</div>
+                    <div className="inputs">
+                        {inputs}
+                    </div>
+                    <div className="outputs">
+                        {outputs}
+                    </div>
+                </div>
+            );
         }
       });
 

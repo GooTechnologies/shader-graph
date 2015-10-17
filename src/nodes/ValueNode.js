@@ -14,6 +14,8 @@ function ValueNode(options){
 ValueNode.prototype = Object.create(Node.prototype);
 ValueNode.constructor = ValueNode;
 
+Node.registerClass('value', ValueNode);
+
 ValueNode.prototype.getOutputPorts = function(key){
 	return ['value'];
 };

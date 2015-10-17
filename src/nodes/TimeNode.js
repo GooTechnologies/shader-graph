@@ -13,6 +13,8 @@ function TimeNode(options){
 TimeNode.prototype = Object.create(Node.prototype);
 TimeNode.constructor = TimeNode;
 
+Node.registerClass('time', TimeNode);
+
 TimeNode.prototype.getOutputPorts = function(key){
 	return ['time'];
 };

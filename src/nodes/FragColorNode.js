@@ -11,8 +11,14 @@ function FragColorNode(options){
 FragColorNode.prototype = Object.create(Node.prototype);
 FragColorNode.constructor = FragColorNode;
 
+Node.registerClass('fragColor', FragColorNode);
+
 FragColorNode.prototype.getInputPorts = function(key){
 	return ['rgba'];
+};
+
+FragColorNode.prototype.getInputTypes = function(key){
+	return ['vec4'];
 };
 
 FragColorNode.prototype.getInputVarNames = function(key){
@@ -39,6 +45,6 @@ FragColorNode.prototype.buildShader = function(){
 				'}',
 			'}'
 		].join('\n');
-		
+
 	}.bind(this);
 };

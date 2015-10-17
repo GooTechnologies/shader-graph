@@ -240,6 +240,6 @@ UberFragNode.prototype.buildShader = function(){
 				'}',
 			'}'
 		].join('\n');
-		
+
 	}.bind(this);
 };

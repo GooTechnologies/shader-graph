@@ -14,11 +14,13 @@ function Vector4Node(options){
 Vector4Node.prototype = Object.create(Node.prototype);
 Vector4Node.constructor = Vector4Node;
 
-Vector4Node.prototype.getInputPorts = function(key){
+Node.registerClass('vec4', Vector4Node);
+
+Vector4Node.prototype.getInputPorts = function(){
 	return ['r', 'g', 'b', 'a'];
 };
 
-Vector4Node.prototype.getOutputPorts = function(key){
+Vector4Node.prototype.getOutputPorts = function(){
 	return ['rgba'];
 };
 

@@ -29,6 +29,12 @@ Graph.prototype.removeNode = function(node){
 	}
 };
 
+Graph.prototype.getNodeById = function(id){
+	return this.nodes.find(function(node){
+		return node.id == id;
+	});
+};
+
 Graph.prototype.addConnection = function(conn){
 	if(conn.graph) throw new Error('Connection was already added to a graph');
 	this.connections.push(conn);

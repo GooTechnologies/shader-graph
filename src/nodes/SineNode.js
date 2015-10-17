@@ -12,6 +12,8 @@ function SineNode(options){
 SineNode.prototype = Object.create(Node.prototype);
 SineNode.constructor = SineNode;
 
+Node.registerClass('sine', SineNode);
+
 SineNode.prototype.getInputPorts = function(key){
 	return ['x'];
 };

@@ -16,7 +16,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Node Editor</a>
+          <a class="navbar-brand" href="#">Shader Graph Editor</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -46,17 +46,6 @@
             },
             render: function() {
                 var nodeTypes = Object.keys(ShaderGraph.Node.classes);
-
-                var nodes = this.state.nodes.map(function(node){
-                    // Add some input/output stuff
-                    node.inputs = this.shader.fragmentGraph.getNodeById(node.id).getInputPorts().map(function(key){
-                        return { key: key };
-                    });
-                    node.outputs = this.shader.fragmentGraph.getNodeById(node.id).getOutputPorts().map(function(key){
-                        return { key: key };
-                    });
-                    return node;
-                }, this);
                 return (
                     <div className="row">
                         <div className="col-xs-3">
@@ -71,7 +60,8 @@
                             <NodeEditor
                                 instance={this.instance}
                                 shader={this.shader}
-                                nodes={nodes}
+                                nodes={this.state.nodes}
+                                connections={this.state.connections}
                                 connect={this.connect}
                                 disconnect={this.disconnect}
                                 initialize={this.initialize} />
@@ -80,6 +70,7 @@
                 );
             },
             initialize: function(instance){
+                // TODO: Maybe it's safer if each Node had its own shader instance, and always initialized it on render? Or maybe if the App had it, and updated it on render.
                 var shader = this.shader = new ShaderGraph.GraphShader();
                 this.instance = instance;
                 this.state.nodes.push({
@@ -189,7 +180,6 @@
                 var camera = new goo.Camera();
                 var entity = gooRunner.world.createEntity(camera, [0,0,3]).addToWorld();
                 world.createEntity(new goo.PointLight(), [-100, 100, 100]).addToWorld();
-                console.log('mount preview')
             },
             render: function() {
                 this.updateShader();
@@ -200,7 +190,6 @@
             updateShader: function(){
                 if(this.entity){
                     var shaderDef = this.props.shader.buildShader();
-                    console.log('updateShader', shaderDef.fshader())
                     var material = new goo.Material(shaderDef);
                     this.entity.meshRendererComponent.materials[0] = material;
                 }
@@ -257,11 +246,17 @@
                     }
                 });
 
-                // suspend drawing and initialise.
+                // suspend drawing and initialize.
                 instance.batch(function () {
-                    // instance.connect({ source: "opened", target: "phone1", type:"basic" });
-                    // instance.connect({ source: "phone1", target: "inperson", type:"basic" });
-                    //
+                    // Connect initial connections
+                    this.props.connections.forEach(function(conn){
+                        instance.connect({
+                            source: conn.nodeA + conn.outputA,
+                            target: conn.nodeB + conn.inputB,
+                            type: "basic"
+                        });
+                    }, this);
+
                     this.props.initialize(instance);
 
                 }.bind(this));
@@ -269,9 +264,15 @@
             render: function() {
               var nodes = this.props.nodes;
               return (
-                <div className="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
+                <div id="canvas">
                   {nodes.map(function(node) {
-                    return <Node instance={this.props.instance} key={node.id} data={node} />;
+                    return (
+                        <Node
+                            instance={this.props.instance}
+                            key={node.id}
+                            data={node}
+                            shader={this.props.shader} />
+                    );
                   }, this)}
                 </div>
               );
@@ -283,7 +284,6 @@
                 var el = ReactDOM.findDOMNode(this);
                 var instance = this.props.instance;
                 instance.draggable(el);
-
                 var eps = el.querySelectorAll('.out, .in');
                 for(var i=0; i<eps.length; i++){
                     var ep = eps[i];
@@ -314,16 +314,16 @@
                 }
             },
             render: function() {
-                var inputs = this.props.data.inputs.map(function(input){
+                var inputs = this.props.shader.fragmentGraph.getNodeById(this.props.data.id).getInputPorts().map(function(key){
                     return (
-                        <div className="in" key={input.key}>{input.key}</div>
+                        <div className="in" key={key} id={key + this.props.data.id}>{key}</div>
                     );
-                });
-                var outputs = this.props.data.outputs.map(function(output){
+                }, this);
+                var outputs = this.props.shader.fragmentGraph.getNodeById(this.props.data.id).getOutputPorts().map(function(key){
                     return (
-                        <div className="out" key={output.key}>{output.key}</div>
+                        <div className="out" key={key} id={key + this.props.data.id}>{key}</div>
                     );
-                });
+                }, this);
                 return (
                     <div className="w" data-node-id={this.props.data.id}>
                         <div className="title">{this.props.data.type}</div>
@@ -333,7 +333,16 @@
                         <div className="outputs">
                             {outputs}
                         </div>
+                        <NodeControls data={this.props.data}/>
                     </div>
+                );
+            }
+          });
+
+          var NodeControls = React.createClass({
+            render: function() {
+                return (
+                    <div></div>
                 );
             }
           });

@@ -1,4 +1,3 @@
-
 html {
   height: 100%;
 }
@@ -27,6 +26,9 @@ body {
   height: 600px;
   margin: auto;
   position: relative;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 #goo {

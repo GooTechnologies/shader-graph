@@ -112,7 +112,18 @@ Node.prototype.connect = function(key, targetNode, targetPortKey){
 };
 
 // todo
-Node.prototype.disconnect = function(key, targetNode, targetPortKey){};
+Node.prototype.disconnect = function(key, targetNode, targetPortKey){
+	var conn = this.graph.connections.find(function(c){
+		return (
+			c.fromNode === targetNode &&
+			c.fromPortKey === targetPortKey &&
+			c.toNode === this &&
+			c.toPortKey === key
+		);
+	}, this);
+	if(conn)
+		this.graph.removeConnection(conn);
+};
 
 Node.prototype.getAttributes = function(){
 	return [];

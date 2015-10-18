@@ -189,7 +189,18 @@
 	};
 
 	// todo
-	Node.prototype.disconnect = function(key, targetNode, targetPortKey){};
+	Node.prototype.disconnect = function(key, targetNode, targetPortKey){
+		var conn = this.graph.connections.find(function(c){
+			return (
+				c.fromNode === targetNode &&
+				c.fromPortKey === targetPortKey &&
+				c.toNode === this &&
+				c.toPortKey === key
+			);
+		}, this);
+		if(conn)
+			this.graph.removeConnection(conn);
+	};
 
 	Node.prototype.getAttributes = function(){
 		return [];
@@ -294,6 +305,7 @@
 	FragColorNode.prototype.buildShader = function(){
 		return function(){
 			this.graph.sortNodes();
+			var input = (this.getInputVarNames('rgba')[0] || 'vec4(1)');
 			return [
 				this.graph.renderVaryingDeclarations(),
 				this.graph.renderUniformDeclarations(),
@@ -301,7 +313,7 @@
 					this.graph.renderConnectionVariableDeclarations(),
 					this.graph.renderNodeCodes(),
 					'{',
-						'gl_FragColor = ' + this.getInputVarNames('rgba')[0] + ';',
+						'gl_FragColor = ' + input + ';',
 					'}',
 				'}'
 			].join('\n');
@@ -1077,6 +1089,10 @@
 
 	SineNode.prototype.getOutputTypes = function(key){
 		return key === 'y' ? ['float'] : [];
+	};
+
+	SineNode.prototype.getInputTypes = function(key){
+		return key === 'x' ? ['float'] : [];
 	};
 
 	SineNode.prototype.getOutputVarNames = function(key){

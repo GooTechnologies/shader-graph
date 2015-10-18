@@ -26,6 +26,10 @@ SineNode.prototype.getOutputTypes = function(key){
 	return key === 'y' ? ['float'] : [];
 };
 
+SineNode.prototype.getInputTypes = function(key){
+	return key === 'x' ? ['float'] : [];
+};
+
 SineNode.prototype.getOutputVarNames = function(key){
 	return key === 'y' ? ['y' + this.id] : [];
 };

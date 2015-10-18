@@ -34,6 +34,7 @@ FragColorNode.prototype.getInputVarNames = function(key){
 FragColorNode.prototype.buildShader = function(){
 	return function(){
 		this.graph.sortNodes();
+		var input = (this.getInputVarNames('rgba')[0] || 'vec4(1)');
 		return [
 			this.graph.renderVaryingDeclarations(),
 			this.graph.renderUniformDeclarations(),
@@ -41,7 +42,7 @@ FragColorNode.prototype.buildShader = function(){
 				this.graph.renderConnectionVariableDeclarations(),
 				this.graph.renderNodeCodes(),
 				'{',
-					'gl_FragColor = ' + this.getInputVarNames('rgba')[0] + ';',
+					'gl_FragColor = ' + input + ';',
 				'}',
 			'}'
 		].join('\n');

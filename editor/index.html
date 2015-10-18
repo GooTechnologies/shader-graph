@@ -36,6 +36,15 @@
         position: relative;
       }
 
+      #goo {
+        width: 100%;
+      }
+      .preview {
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-bottom: 15px;
+      }
+
       .demo {
           touch-action:none;
       }
@@ -50,6 +59,7 @@
           min-width: 100px;
           min-height: 100px;
           border-radius: 4px;
+          color: #555;
       }
 
         .w .out, .w .in {
@@ -65,8 +75,8 @@
         cursor: move;
         text-align: center;
         padding:5px;
-        background-color: black;
-        color: white;
+        background-color: #222;
+        color: #9d9d9d;
       }
 
       .w:hover {
@@ -163,12 +173,9 @@
     <script src="js/goo.js"></script>
     <script src="../build/shadergraph.js"></script>
     <script type="text/babel">
-    jsPlumb.ready(function () {
 
-        var shader = new ShaderGraph.GraphShader();
-        var fragmentGraph = shader.fragmentGraph;
-        var vertexGraph = shader.vertexGraph;
         var instance;
+        var shader = new ShaderGraph.GraphShader();
 
         var App = React.createClass({
             getInitialState: function(){
@@ -178,36 +185,46 @@
                 };
             },
             render: function() {
-              var nodeTypes = Object.keys(ShaderGraph.Node.classes);
-              var nodes = this.state.nodes.map(function(node){
-                // Add some input/output stuff
-                node.inputs = fragmentGraph.getNodeById(node.id).getInputPorts().map(function(key){
-                    return {
-                        key: key
-                    };
+                var nodeTypes = Object.keys(ShaderGraph.Node.classes);
+
+                var nodes = this.state.nodes.map(function(node){
+                    // Add some input/output stuff
+                    node.inputs = shader.fragmentGraph.getNodeById(node.id).getInputPorts().map(function(key){
+                        return {
+                            key: key
+                        };
+                    });
+                    node.outputs = shader.fragmentGraph.getNodeById(node.id).getOutputPorts().map(function(key){
+                        return {
+                            key: key
+                        };
+                    });
+                    return node;
                 });
-                node.outputs = fragmentGraph.getNodeById(node.id).getOutputPorts().map(function(key){
-                    return {
-                        key: key
-                    };
-                });
-                return node;
-              });
-              return (
-                <div className="row">
-                  <NodeSelectList nodeTypes={nodeTypes} addNode={this.addNode}/>
-                  <NodeEditor
-                    nodes={nodes}
-                    connect={this.connect}
-                    disconnect={this.disconnect}
-                    addMainNode={this.addMainNode} />
-                </div>
-              );
+                return (
+                    <div className="row">
+                        <div className="col-xs-3">
+                            <div className="row">
+                                <Preview/>
+                            </div>
+                            <NodeSelectList
+                                nodeTypes={nodeTypes}
+                                addNode={this.addNode} />
+                        </div>
+                        <div className="col-xs-9">
+                            <NodeEditor
+                                nodes={nodes}
+                                connect={this.connect}
+                                disconnect={this.disconnect}
+                                addMainNode={this.addMainNode} />
+                        </div>
+                    </div>
+                );
             },
             addMainNode: function(){
                 this.state.nodes.push({
-                    id: fragmentGraph.mainNode.id,
-                    type: fragmentGraph.mainNode.constructor.type
+                    id: shader.fragmentGraph.mainNode.id,
+                    type: shader.fragmentGraph.mainNode.constructor.type
                 });
                 this.setState(this.state);
             },
@@ -231,6 +248,7 @@
                     console.warn(nB.errorMessage);
                     return false;
                 }
+                nB.connect(inputB, nA, outputA);
 
                 var state = this.state;
                 state.connections.push({
@@ -257,6 +275,11 @@
                 if(idx !== -1){
                     state.connections.splice(idx, 1);
                 }
+
+                var nA = shader.fragmentGraph.getNodeById(nodeA);
+                var nB = shader.fragmentGraph.getNodeById(nodeB);
+                nB.disconnect(inputB, nA, outputA);
+
               this.setState(state);
             }
           });
@@ -269,10 +292,8 @@
                 );
               }, this);
               return (
-                <div className="col-xs-3">
-                    <div className="list-group">
-                      {items}
-                    </div>
+                <div className="list-group">
+                  {items}
                 </div>
               );
             }
@@ -286,6 +307,44 @@
             },
             handleClick: function(){
               this.props.addNode(this.props.type);
+            }
+          });
+
+          var Preview = React.createClass({
+            componentDidMount: function(){
+                var gooRunner = new goo.GooRunner({
+                    logo: false,
+                    useDevicePixelRatio: true
+                });
+                gooRunner.renderer.setClearColor(0, 0, 0, 1);
+                gooRunner.renderer.domElement.id = 'goo';
+                ReactDOM.findDOMNode(this).appendChild(gooRunner.renderer.domElement);
+
+                var world = gooRunner.world;
+                var shaderDef = shader.buildShader();
+                var material = new goo.Material(shaderDef);
+                this.entity = world.createEntity(new goo.Sphere(32,32,1), material, function (entity){
+                    entity.setRotation(0, -world.time * 0.1, 0);
+                }).addToWorld();
+
+                var camera = new goo.Camera();
+                var entity = gooRunner.world.createEntity(camera, [0,0,3]).addToWorld();
+                world.createEntity(new goo.PointLight(), [-100, 100, 100]).addToWorld();
+                console.log('mount preview')
+            },
+            render: function() {
+                this.updateShader();
+                return (
+                    <div className="preview col-xs-12"></div>
+                );
+            },
+            updateShader: function(){
+                if(this.entity){
+                    var shaderDef = shader.buildShader();
+                    console.log('updateShader', shaderDef.fshader())
+                    var material = new goo.Material(shaderDef);
+                    this.entity.meshRendererComponent.materials[0] = material;
+                }
             }
           });
 
@@ -351,12 +410,10 @@
             render: function() {
               var nodes = this.props.nodes;
               return (
-                <div className="col-xs-9">
-                    <div className="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
-                      {nodes.map(function(node) {
-                        return <Node instance={instance} key={node.id} data={node} />;
-                      }, this)}
-                    </div>
+                <div className="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
+                  {nodes.map(function(node) {
+                    return <Node instance={instance} key={node.id} data={node} />;
+                  }, this)}
                 </div>
               );
             }
@@ -425,7 +482,6 @@
             <App />,
             document.getElementById('content')
           );
-        });
     </script>
   </body>
 </html>

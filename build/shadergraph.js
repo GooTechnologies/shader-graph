@@ -82,8 +82,12 @@
 
 	function Node(options){
 		options = options || {};
-
-		this.id = Node._idCounter++;
+		if(options.id){
+			Node._idCounter = Math.max(options.id + 1, Node._idCounter);
+			this.id = options.id;
+		} else {
+			this.id = Node._idCounter++;
+		}
 		this.name = options.name || 'Unnamed node';
 	}
 
@@ -1356,18 +1360,20 @@
 
 	Graph.prototype.renderAttrubuteDeclarations = function(){
 		var shaderSource = [];
+		var declarations = {}; // Only unique declarations
 		this.getAttributes().sort(sortByName).forEach(function(attribute){
-			shaderSource.push('attribute ' + attribute.type + ' ' + attribute.name + ';');
+			declarations['attribute ' + attribute.type + ' ' + attribute.name + ';'] = true;
 		});
-		return shaderSource.join('\n');
+		return Object.keys(declarations).join('\n');
 	};
 
 	Graph.prototype.renderVaryingDeclarations = function(){
 		var shaderSource = [];
+		var declarations = {}; // Only unique declarations
 		this.getVaryings().sort(sortByName).forEach(function(varying){
-			shaderSource.push('varying ' + varying.type + ' ' + varying.name + ';');
+			declarations['varying ' + varying.type + ' ' + varying.name + ';'] = true;
 		});
-		return shaderSource.join('\n');
+		return Object.keys(declarations).join('\n');
 	};
 
 	// Topology sort the nodes

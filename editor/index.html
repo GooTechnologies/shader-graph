@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Node Editor</title>
+    <title>Shader Graph Editor</title>
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/style.css">
   </head>
@@ -45,7 +45,7 @@
                 };
             },
             render: function() {
-                var nodeTypes = Object.keys(ShaderGraph.Node.classes);
+                var nodeTypes = Object.keys(ShaderGraph.Node.classes).sort();
                 return (
                     <div className="row">
                         <div className="col-xs-3">
@@ -64,6 +64,7 @@
                                 connections={this.state.connections}
                                 connect={this.connect}
                                 disconnect={this.disconnect}
+                                updateNodeData={this.updateNodeData}
                                 initialize={this.initialize} />
                         </div>
                     </div>
@@ -73,21 +74,55 @@
                 // TODO: Maybe it's safer if each Node had its own shader instance, and always initialized it on render? Or maybe if the App had it, and updated it on render.
                 var shader = this.shader = new ShaderGraph.GraphShader();
                 this.instance = instance;
+
+                // Add other nodes to the shader
+                this.state.nodes.forEach(function(){
+                    var node = new ShaderGraph.Node.classes[type]();
+                    this.shader.fragmentGraph.addNode(node);
+                }, this);
+
+                // Add the main node
                 this.state.nodes.push({
                     id: shader.fragmentGraph.mainNode.id,
                     type: shader.fragmentGraph.mainNode.constructor.type
                 });
+
                 this.setState(this.state);
             },
             addNode: function(type){
                 var node = new ShaderGraph.Node.classes[type]();
                 this.shader.fragmentGraph.addNode(node);
                 var state = this.state;
-                state.nodes.push({
+                var data = {
                     id: node.id,
                     type: type
-                });
+                };
+                state.nodes.push(data);
+                switch(type){
+                case 'value':
+                    data.value = 0;
+                    break;
+                }
                 this.setState(state);
+                return node.id;
+            },
+            updateNodeData: function(id, data){
+                var node = this.state.nodes.find(function(node){
+                    return node.id === id;
+                });
+                if(node){
+                    for(var key in data){
+                        node[key] = data[key];
+                    }
+                    this.setState(this.state);
+
+                    var shaderNode = this.shader.fragmentGraph.getNodeById(id);
+                    switch(node.type){
+                    case 'value':
+                        shaderNode.value = parseFloat(data.value);
+                        break;
+                    }
+                }
             },
             connect: function(nodeA, outputA, nodeB, inputB){
                 var nA = this.shader.fragmentGraph.getNodeById(nodeA);
@@ -190,6 +225,7 @@
             updateShader: function(){
                 if(this.entity){
                     var shaderDef = this.props.shader.buildShader();
+                    console.log(shaderDef.fshader())
                     var material = new goo.Material(shaderDef);
                     this.entity.meshRendererComponent.materials[0] = material;
                 }
@@ -268,6 +304,7 @@
                   {nodes.map(function(node) {
                     return (
                         <Node
+                            updateNodeData={this.props.updateNodeData}
                             instance={this.props.instance}
                             key={node.id}
                             data={node}
@@ -333,17 +370,23 @@
                         <div className="outputs">
                             {outputs}
                         </div>
-                        <NodeControls data={this.props.data}/>
+                        {
+                            {
+                                value: (
+                                    <input
+                                        type="number"
+                                        value={this.props.data.value}
+                                        onChange={this.onChangeValue}/>
+                                )
+                            }[this.props.data.type]
+                        }
                     </div>
                 );
-            }
-          });
-
-          var NodeControls = React.createClass({
-            render: function() {
-                return (
-                    <div></div>
-                );
+            },
+            onChangeValue: function(evt){
+                this.props.updateNodeData(this.props.data.id, {
+                    value: evt.target.value
+                })
             }
           });
 

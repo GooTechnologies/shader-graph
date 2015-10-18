@@ -56,12 +56,13 @@
 		UVNode: __webpack_require__(10),
 		TimeNode: __webpack_require__(13),
 		SineNode: __webpack_require__(14),
+		MultiplyNode: __webpack_require__(15),
 
 		Attribute: __webpack_require__(11),
 		Connection: __webpack_require__(2),
-		FragmentGraph: __webpack_require__(15),
-		Graph: __webpack_require__(16),
-		GraphShader: __webpack_require__(18),
+		FragmentGraph: __webpack_require__(16),
+		Graph: __webpack_require__(17),
+		GraphShader: __webpack_require__(19),
 		Uniform: __webpack_require__(7),
 		Varying: __webpack_require__(12),
 
@@ -107,7 +108,7 @@
 		return [];
 	};
 
-	Node.prototype.getOutputTypes = function(key){ // TODO: maybe the output should have just one type
+	Node.prototype.getOutputTypes = function(key){
 		return [];
 	};
 
@@ -1116,7 +1117,61 @@
 /* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Graph = __webpack_require__(16);
+	var Node = __webpack_require__(1);
+
+	module.exports = MultiplyNode;
+
+	// Adds a vec4 uniform to the shader.
+	function MultiplyNode(options){
+		options = options || {};
+		Node.call(this, {
+			name: 'Multiply'
+		});
+	}
+	MultiplyNode.prototype = Object.create(Node.prototype);
+	MultiplyNode.prototype.constructor = MultiplyNode;
+
+	Node.registerClass('multiply', MultiplyNode);
+
+	MultiplyNode.prototype.getInputPorts = function(key){
+		return ['a', 'b'];
+	};
+
+	MultiplyNode.prototype.getOutputPorts = function(key){
+		return ['product'];
+	};
+
+	MultiplyNode.prototype.getOutputTypes = function(key){
+		return key === 'product' ? ['float'] : [];
+	};
+
+	MultiplyNode.prototype.getInputTypes = function(key){
+		return key === 'a' || key === 'b' ? ['float'] : [];
+	};
+
+	MultiplyNode.prototype.getOutputVarNames = function(key){
+		return key === 'product' ? ['product' + this.id] : [];
+	};
+
+	MultiplyNode.prototype.render = function(){
+		var inVarNameA = this.getInputVariableNames('a')[0];
+		var inVarNameB = this.getInputVariableNames('b')[0];
+		var outVarName = this.getOutputVarNames('product')[0];
+		if(inVarNameA && inVarNameB && outVarName){
+			return outVarName + ' = ' + inVarNameA + ' * ' + inVarNameB + ';';
+		} else if(outVarName){
+			return outVarName + ' = 0.0;';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Graph = __webpack_require__(17);
 	var FragColorNode = __webpack_require__(3);
 
 	module.exports = FragmentGraph;
@@ -1129,10 +1184,10 @@
 	FragmentGraph.prototype = Object.create(Graph.prototype);
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toposort = __webpack_require__(17);
+	var toposort = __webpack_require__(18);
 
 	module.exports = Graph;
 
@@ -1340,7 +1395,7 @@
 	};
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports) {
 
 	
@@ -1405,11 +1460,11 @@
 
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var FragmentGraph = __webpack_require__(15);
-	var VertexGraph = __webpack_require__(19);
+	var FragmentGraph = __webpack_require__(16);
+	var VertexGraph = __webpack_require__(20);
 
 	module.exports = GraphShader;
 
@@ -1462,11 +1517,11 @@
 	};
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var PositionNode = __webpack_require__(4);
-	var Graph = __webpack_require__(16);
+	var Graph = __webpack_require__(17);
 	var Uniform = __webpack_require__(7);
 	var Attribute = __webpack_require__(11);
 

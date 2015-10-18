@@ -30,7 +30,7 @@ Node.prototype.getInputTypes = function(key){
 	return [];
 };
 
-Node.prototype.getOutputTypes = function(key){ // TODO: maybe the output should have just one type
+Node.prototype.getOutputTypes = function(key){
 	return [];
 };
 

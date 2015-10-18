@@ -1,0 +1,133 @@
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: auto;
+  height: 100%;
+}
+
+.add-node-button {
+  cursor: pointer;
+}
+
+/* Bootstrap */
+.container-full {
+  padding: 0 15px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 100%;
+}
+
+/* jsplumb start */
+#canvas {
+  width: 100%;
+  max-height: 100%;
+  height: 600px;
+  margin: auto;
+  position: relative;
+}
+
+#goo {
+  width: 100%;
+}
+.preview {
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-bottom: 15px;
+}
+
+.demo {
+    touch-action:none;
+}
+
+.w {
+    padding: 0;
+    position: absolute;
+    z-index: 4;
+    border: 1px solid black;
+    background-color: white;
+    font-size: 11px;
+    min-width: 100px;
+    min-height: 100px;
+    border-radius: 4px;
+    color: #555;
+}
+
+  .w .out, .w .in {
+      cursor: pointer;
+      margin: 3px;
+  }
+
+  .w .out {
+      text-align: right;
+  }
+
+.w .title {
+  cursor: move;
+  text-align: center;
+  padding:5px;
+  background-color: #222;
+  color: #9d9d9d;
+}
+
+.w:hover {
+    background-color: #ddd;
+}
+
+.aLabel.jsplumb-hover, .jsplumb-source-hover, .jsplumb-target-hover {
+    background-color: #ddd;
+}
+
+.aLabel {
+    background-color: white;
+    padding: 3px;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+.ep {
+    position: absolute;
+    top: 10px;
+    right: -30px;
+    width: 30px;
+    height: 20px;
+    background-color: gray;
+    cursor: pointer;
+}
+
+.statemachine-demo .jsplumb-endpoint {
+    z-index: 3;
+}
+
+#opened {
+    left: 10em;
+    top: 10em;
+}
+
+#phone1 {
+    left: 35em;
+    top: 12em;
+    width: 7em;
+}
+
+#inperson {
+    left: 12em;
+    top: 23em;
+}
+
+#phone2 {
+    left: 28em;
+    top: 24em;
+}
+
+.dragHover {
+    border: 2px solid orange;
+}
+
+path, .jsplumb-endpoint {
+  cursor: pointer;
+}
+
+/* jsplumb end */

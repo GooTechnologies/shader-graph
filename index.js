@@ -10,6 +10,7 @@ module.exports = {
 	UVNode: require('./src/nodes/UVNode'),
 	TimeNode: require('./src/nodes/TimeNode'),
 	SineNode: require('./src/nodes/SineNode'),
+	MultiplyNode: require('./src/nodes/MultiplyNode'),
 
 	Attribute: require('./src/Attribute'),
 	Connection: require('./src/Connection'),

@@ -4,146 +4,9 @@
     <meta charset="utf-8" />
     <title>Node Editor</title>
     <link rel="stylesheet" href="css/bootstrap.css">
-    <style>
-
-    html {
-        height: 100%;
-    }
-
-    body {
-        margin: auto;
-        height: 100%;
-    }
-
-    .add-node-button {
-        cursor: pointer;
-    }
-
-    /* Bootstrap */
-    .container-full {
-        padding: 0 15px;
-        margin: 0 auto;
-        width: 100%;
-        min-height: 100%;
-    }
-
-      /* jsplumb start */
-      #canvas {
-        width: 100%;
-        max-height: 100%;
-        height: 600px;
-        margin: auto;
-        position: relative;
-      }
-
-      #goo {
-        width: 100%;
-      }
-      .preview {
-        padding-left: 15px;
-        padding-right: 15px;
-        padding-bottom: 15px;
-      }
-
-      .demo {
-          touch-action:none;
-      }
-
-      .w {
-          padding: 0;
-          position: absolute;
-          z-index: 4;
-          border: 1px solid black;
-          background-color: white;
-          font-size: 11px;
-          min-width: 100px;
-          min-height: 100px;
-          border-radius: 4px;
-          color: #555;
-      }
-
-        .w .out, .w .in {
-            cursor: pointer;
-            margin: 3px;
-        }
-
-        .w .out {
-            text-align: right;
-        }
-
-      .w .title {
-        cursor: move;
-        text-align: center;
-        padding:5px;
-        background-color: #222;
-        color: #9d9d9d;
-      }
-
-      .w:hover {
-          background-color: #ddd;
-      }
-
-      .aLabel.jsplumb-hover, .jsplumb-source-hover, .jsplumb-target-hover {
-          background-color: #ddd;
-      }
-
-      .aLabel {
-          background-color: white;
-          padding: 3px;
-          border: 1px solid black;
-          cursor: pointer;
-      }
-
-      .ep {
-          position: absolute;
-          top: 10px;
-          right: -30px;
-          width: 30px;
-          height: 20px;
-          background-color: gray;
-          cursor: pointer;
-      }
-
-      .statemachine-demo .jsplumb-endpoint {
-          z-index: 3;
-      }
-
-      #opened {
-          left: 10em;
-          top: 10em;
-      }
-
-      #phone1 {
-          left: 35em;
-          top: 12em;
-          width: 7em;
-      }
-
-      #inperson {
-          left: 12em;
-          top: 23em;
-      }
-
-      #phone2 {
-          left: 28em;
-          top: 24em;
-      }
-
-      .dragHover {
-          border: 2px solid orange;
-      }
-
-      path, .jsplumb-endpoint {
-        cursor: pointer;
-      }
-
-      /* jsplumb end */
-
-
-    </style>
+    <link rel="stylesheet" href="css/style.css">
   </head>
   <body>
-
     <nav class="navbar navbar-inverse navbar-default navbar-static-top">
       <div class="container-full">
         <div class="navbar-header">
@@ -158,7 +21,7 @@
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
           </ul>
-        </div><!--/.nav-collapse -->
+        </div>
       </div>
     </nav>
 
@@ -174,9 +37,6 @@
     <script src="../build/shadergraph.js"></script>
     <script type="text/babel">
 
-        var instance;
-        var shader = new ShaderGraph.GraphShader();
-
         var App = React.createClass({
             getInitialState: function(){
                 return {
@@ -189,23 +49,19 @@
 
                 var nodes = this.state.nodes.map(function(node){
                     // Add some input/output stuff
-                    node.inputs = shader.fragmentGraph.getNodeById(node.id).getInputPorts().map(function(key){
-                        return {
-                            key: key
-                        };
+                    node.inputs = this.shader.fragmentGraph.getNodeById(node.id).getInputPorts().map(function(key){
+                        return { key: key };
                     });
-                    node.outputs = shader.fragmentGraph.getNodeById(node.id).getOutputPorts().map(function(key){
-                        return {
-                            key: key
-                        };
+                    node.outputs = this.shader.fragmentGraph.getNodeById(node.id).getOutputPorts().map(function(key){
+                        return { key: key };
                     });
                     return node;
-                });
+                }, this);
                 return (
                     <div className="row">
                         <div className="col-xs-3">
                             <div className="row">
-                                <Preview/>
+                                <Preview shader={this.shader}/>
                             </div>
                             <NodeSelectList
                                 nodeTypes={nodeTypes}
@@ -213,15 +69,19 @@
                         </div>
                         <div className="col-xs-9">
                             <NodeEditor
+                                instance={this.instance}
+                                shader={this.shader}
                                 nodes={nodes}
                                 connect={this.connect}
                                 disconnect={this.disconnect}
-                                addMainNode={this.addMainNode} />
+                                initialize={this.initialize} />
                         </div>
                     </div>
                 );
             },
-            addMainNode: function(){
+            initialize: function(instance){
+                var shader = this.shader = new ShaderGraph.GraphShader();
+                this.instance = instance;
                 this.state.nodes.push({
                     id: shader.fragmentGraph.mainNode.id,
                     type: shader.fragmentGraph.mainNode.constructor.type
@@ -230,7 +90,7 @@
             },
             addNode: function(type){
                 var node = new ShaderGraph.Node.classes[type]();
-                shader.fragmentGraph.addNode(node);
+                this.shader.fragmentGraph.addNode(node);
                 var state = this.state;
                 state.nodes.push({
                     id: node.id,
@@ -239,8 +99,8 @@
                 this.setState(state);
             },
             connect: function(nodeA, outputA, nodeB, inputB){
-                var nA = shader.fragmentGraph.getNodeById(nodeA);
-                var nB = shader.fragmentGraph.getNodeById(nodeB);
+                var nA = this.shader.fragmentGraph.getNodeById(nodeA);
+                var nB = this.shader.fragmentGraph.getNodeById(nodeB);
                 if(!nA) throw new Error('couldnt find node ' + nodeA);
                 if(!nB) throw new Error('couldnt find node ' + nodeB);
 
@@ -276,8 +136,8 @@
                     state.connections.splice(idx, 1);
                 }
 
-                var nA = shader.fragmentGraph.getNodeById(nodeA);
-                var nB = shader.fragmentGraph.getNodeById(nodeB);
+                var nA = this.shader.fragmentGraph.getNodeById(nodeA);
+                var nB = this.shader.fragmentGraph.getNodeById(nodeB);
                 nB.disconnect(inputB, nA, outputA);
 
               this.setState(state);
@@ -321,8 +181,7 @@
                 ReactDOM.findDOMNode(this).appendChild(gooRunner.renderer.domElement);
 
                 var world = gooRunner.world;
-                var shaderDef = shader.buildShader();
-                var material = new goo.Material(shaderDef);
+                var material = new goo.Material();
                 this.entity = world.createEntity(new goo.Sphere(32,32,1), material, function (entity){
                     entity.setRotation(0, -world.time * 0.1, 0);
                 }).addToWorld();
@@ -340,7 +199,7 @@
             },
             updateShader: function(){
                 if(this.entity){
-                    var shaderDef = shader.buildShader();
+                    var shaderDef = this.props.shader.buildShader();
                     console.log('updateShader', shaderDef.fshader())
                     var material = new goo.Material(shaderDef);
                     this.entity.meshRendererComponent.materials[0] = material;
@@ -354,7 +213,7 @@
                 var component = this;
 
                 // setup some defaults for jsPlumb.
-                instance = jsPlumb.getInstance({
+                var instance = jsPlumb.getInstance({
                     Endpoint: ["Dot", {radius: 0.00001}],
                     Connector:"StateMachine",
                     HoverPaintStyle: {
@@ -403,7 +262,7 @@
                     // instance.connect({ source: "opened", target: "phone1", type:"basic" });
                     // instance.connect({ source: "phone1", target: "inperson", type:"basic" });
                     //
-                    this.props.addMainNode();
+                    this.props.initialize(instance);
 
                 }.bind(this));
             },
@@ -412,7 +271,7 @@
               return (
                 <div className="jtk-demo-canvas canvas-wide statemachine-demo jtk-surface jtk-surface-nopan" id="canvas">
                   {nodes.map(function(node) {
-                    return <Node instance={instance} key={node.id} data={node} />;
+                    return <Node instance={this.props.instance} key={node.id} data={node} />;
                   }, this)}
                 </div>
               );
@@ -422,19 +281,20 @@
           var Node = React.createClass({
             componentDidMount: function(){
                 var el = ReactDOM.findDOMNode(this);
-                this.props.instance.draggable(el);
+                var instance = this.props.instance;
+                instance.draggable(el);
 
                 var eps = el.querySelectorAll('.out, .in');
                 for(var i=0; i<eps.length; i++){
                     var ep = eps[i];
 
-                    this.props.instance.makeSource(ep, {
+                    instance.makeSource(ep, {
                         anchor: "Continuous",
                         connectorStyle: {
-                          strokeStyle: "black",
-                          lineWidth: 2,
-                          outlineColor: "transparent",
-                          outlineWidth: 4
+                            strokeStyle: "black",
+                            lineWidth: 2,
+                            outlineColor: "transparent",
+                            outlineWidth: 4
                         },
                         maxConnections: 1,
                         connectionType:"basic",
@@ -446,7 +306,7 @@
                         }
                     });
 
-                    this.props.instance.makeTarget(ep, {
+                    instance.makeTarget(ep, {
                         dropOptions: { hoverClass: "dragHover" },
                         anchor: "Continuous",
                         allowLoopback: false

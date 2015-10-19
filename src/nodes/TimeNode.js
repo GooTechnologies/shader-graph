@@ -6,9 +6,7 @@ module.exports = TimeNode;
 // Adds a vec4 uniform to the shader.
 function TimeNode(options){
 	options = options || {};
-	Node.call(this, {
-		name: 'Time'
-	});
+	Node.call(this, options);
 }
 TimeNode.prototype = Object.create(Node.prototype);
 TimeNode.prototype.constructor = TimeNode;

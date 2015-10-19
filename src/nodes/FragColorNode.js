@@ -4,9 +4,7 @@ module.exports = FragColorNode;
 
 function FragColorNode(options){
 	options = options || {};
-	Node.call(this, {
-		name: 'FragColor'
-	});
+	Node.call(this, options);
 }
 FragColorNode.prototype = Object.create(Node.prototype);
 FragColorNode.prototype.constructor = FragColorNode;

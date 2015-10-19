@@ -3,9 +3,7 @@ var Node = require('./Node');
 module.exports = UberFragNode;
 
 function UberFragNode(){
-	Node.call(this, {
-		name: 'Uber'
-	});
+	Node.call(this, options);
 }
 UberFragNode.prototype = Object.create(Node.prototype);
 UberFragNode.prototype.constructor = UberFragNode;

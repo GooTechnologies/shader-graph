@@ -7,9 +7,7 @@ module.exports = UVNode;
 
 function UVNode(options){
 	options = options || {};
-	Node.call(this, {
-		name: 'UV'
-	});
+	Node.call(this, options);
 }
 UVNode.prototype = Object.create(Node.prototype);
 UVNode.prototype.constructor = UVNode;

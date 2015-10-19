@@ -6,9 +6,7 @@ module.exports = Vector4Node;
 // A vector with four components/values.
 function Vector4Node(options){
 	options = options || {};
-	Node.call(this, {
-		name: 'Vector4'
-	});
+	Node.call(this, options);
 	this.defaultValue = options.defaultValue ? options.defaultValue.slice(0) : [0,0,0,0];
 }
 Vector4Node.prototype = Object.create(Node.prototype);

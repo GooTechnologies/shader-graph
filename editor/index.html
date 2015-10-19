@@ -45,6 +45,7 @@
                 };
             },
             render: function() {
+                var shader = this.updateShader();
                 var nodeTypes = Object.keys(ShaderGraph.Node.classes).sort();
                 return (
                     <div className="row">
@@ -58,8 +59,9 @@
                         </div>
                         <div className="col-xs-9">
                             <NodeEditor
+                                updateShader={this.updateShader}
                                 instance={this.instance}
-                                shader={this.shader}
+                                shader={shader}
                                 nodes={this.state.nodes}
                                 connections={this.state.connections}
                                 connect={this.connect}
@@ -71,31 +73,71 @@
                     </div>
                 );
             },
-            initialize: function(instance){
-                // TODO: Maybe it's safer if each Node had its own shader instance, and always initialized it on render? Or maybe if the App had it, and updated it on render.
-                var shader = this.shader = new ShaderGraph.GraphShader();
-                this.instance = instance;
+            updateShader: function(){
+                    console.log('udpateshader')
+                // Find the main node
+                var fragColorNodeData = this.state.nodes.find(function(node){
+                    return node.type === 'fragColor';
+                });
 
-                // Add other nodes to the shader
-                this.state.nodes.forEach(function(){
-                    var node = new ShaderGraph.Node.classes[type]();
+                var shader = this.shader = new ShaderGraph.GraphShader({
+                    fragMainNode: new ShaderGraph.FragColorNode({
+                        id: fragColorNodeData && fragColorNodeData.id
+                    })
+                });
+
+                // Add nodes that are not main nodes
+                this.state.nodes.filter(function(nodeData){
+                    return nodeData.type !== 'fragColor';
+                }).forEach(function(nodeData){
+                    var node = new ShaderGraph.Node.classes[nodeData.type]({
+                        id: nodeData.id
+                    });
                     this.shader.fragmentGraph.addNode(node);
+                    switch(nodeData.type){
+                    case 'value':
+                        node.value = parseFloat(nodeData.value);
+                        break;
+                    }
                 }, this);
+
+                // Connections
+                this.state.connections.forEach(function (conn){
+                    var nA = this.shader.fragmentGraph.getNodeById(conn.nodeA);
+                    var nB = this.shader.fragmentGraph.getNodeById(conn.nodeB);
+                    if(!nA) console.warn('couldnt find node ' + conn.nodeA);
+                    if(!nB) console.warn('couldnt find node ' + conn.nodeB);
+
+                    if(!nB.canConnect(conn.inputB, nA, conn.outputA)){
+                        console.warn(nB.errorMessage);
+                        return false;
+                    }
+                    nB.connect(conn.inputB, nA, conn.outputA);
+                }, this);
+
+                return shader; 
+            },
+            initialize: function(instance){
+                this.instance = instance;
 
                 // Add the main node
                 this.state.nodes.push({
-                    id: shader.fragmentGraph.mainNode.id,
-                    type: shader.fragmentGraph.mainNode.constructor.type
+                    id: this.generateId(),
+                    type: ShaderGraph.FragColorNode.type
                 });
 
                 this.setState(this.state);
             },
+            generateId: function(){
+                if(this.idCounter === undefined){
+                    this.idCounter = 1;
+                }
+                return this.idCounter++;
+            },
             addNode: function(type){
-                var node = new ShaderGraph.Node.classes[type]();
-                this.shader.fragmentGraph.addNode(node);
                 var state = this.state;
                 var data = {
-                    id: node.id,
+                    id: this.generateId(),
                     type: type
                 };
                 state.nodes.push(data);
@@ -108,9 +150,8 @@
                 return node.id;
             },
             removeNode: function(id){
+                // TODO: Remove the connections connected
                 var state = this.state;
-                var node = this.shader.fragmentGraph.getNodeById(id);
-                this.shader.fragmentGraph.removeNode(node);
                 var nodeToRemove = state.nodes.find(function(node){
                     return node.id === id;
                 });
@@ -129,13 +170,6 @@
                         node[key] = data[key];
                     }
                     this.setState(this.state);
-
-                    var shaderNode = this.shader.fragmentGraph.getNodeById(id);
-                    switch(node.type){
-                    case 'value':
-                        shaderNode.value = parseFloat(data.value);
-                        break;
-                    }
                 }
             },
             connect: function(nodeA, outputA, nodeB, inputB){
@@ -176,9 +210,9 @@
                     state.connections.splice(idx, 1);
                 }
 
-                var nA = this.shader.fragmentGraph.getNodeById(nodeA);
-                var nB = this.shader.fragmentGraph.getNodeById(nodeB);
-                nB.disconnect(inputB, nA, outputA);
+                // var nA = this.shader.fragmentGraph.getNodeById(nodeA);
+                // var nB = this.shader.fragmentGraph.getNodeById(nodeB);
+                // nB.disconnect(inputB, nA, outputA);
 
               this.setState(state);
             }
@@ -319,6 +353,7 @@
                   {nodes.map(function(node) {
                     return (
                         <Node
+                            updateShader={this.props.updateShader}
                             onDoubleClick={this.props.onDoubleClickNode}
                             updateNodeData={this.props.updateNodeData}
                             instance={this.props.instance}
@@ -376,16 +411,18 @@
                 el.removeEventListener('dblclick', this.dblClickListener);
             },
             render: function() {
-                var inputs = this.props.shader.fragmentGraph.getNodeById(this.props.data.id).getInputPorts().map(function(key){
+                var shader = this.props.updateShader();
+                var node = shader.fragmentGraph.getNodeById(this.props.data.id);
+                var inputs = node ? node.getInputPorts().map(function(key){
                     return (
                         <div className="in" key={key} id={key + this.props.data.id}>{key}</div>
                     );
-                }, this);
-                var outputs = this.props.shader.fragmentGraph.getNodeById(this.props.data.id).getOutputPorts().map(function(key){
+                }, this) : undefined;
+                var outputs = node ? node.getOutputPorts().map(function(key){
                     return (
                         <div className="out" key={key} id={key + this.props.data.id}>{key}</div>
                     );
-                }, this);
+                }, this) : undefined;
                 return (
                     <div className="w" data-node-id={this.props.data.id}>
                         <div className="title">{this.props.data.type}</div>

@@ -4,12 +4,12 @@ module.exports = PositionNode;
 
 function PositionNode(options){
 	options = options || {};
-	Node.call(this, {
-		name: 'Position'
-	});
+	Node.call(this, options);
 }
 PositionNode.prototype = Object.create(Node.prototype);
 PositionNode.prototype.constructor = PositionNode;
+
+Node.registerClass('position', PositionNode);
 
 PositionNode.prototype.buildShader = function(){
 	return function(){

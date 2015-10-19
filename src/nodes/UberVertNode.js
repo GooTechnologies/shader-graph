@@ -4,9 +4,7 @@ var Uniform = require('../Uniform');
 module.exports = UberVertNode;
 
 function UberVertNode(){
-	Node.call(this, {
-		name: 'UberFrag'
-	});
+	Node.call(this, options);
 }
 UberVertNode.prototype = Object.create(Node.prototype);
 UberVertNode.prototype.constructor = UberVertNode;

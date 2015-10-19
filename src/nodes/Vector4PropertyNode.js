@@ -6,9 +6,7 @@ module.exports = Vector4PropertyNode;
 // Adds a vec4 uniform to the shader.
 function Vector4PropertyNode(options){
 	options = options || {};
-	Node.call(this, {
-		name: 'Vector4'
-	});
+	Node.call(this, options);
 	this.defaultValue = options.defaultValue ? options.defaultValue.slice(0) : [0,0,0,0];
 }
 Vector4PropertyNode.prototype = Object.create(Node.prototype);

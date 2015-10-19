@@ -6,9 +6,7 @@ module.exports = ValueNode;
 // A vector with four components/values.
 function ValueNode(options){
 	options = options || {};
-	Node.call(this, {
-		name: 'Value'
-	});
+	Node.call(this, options);
 	this.value = options.value || 0;
 }
 ValueNode.prototype = Object.create(Node.prototype);

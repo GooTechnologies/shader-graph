@@ -5,9 +5,7 @@ module.exports = MultiplyNode;
 // Adds a vec4 uniform to the shader.
 function MultiplyNode(options){
 	options = options || {};
-	Node.call(this, {
-		name: 'Multiply'
-	});
+	Node.call(this, options);
 }
 MultiplyNode.prototype = Object.create(Node.prototype);
 MultiplyNode.prototype.constructor = MultiplyNode;

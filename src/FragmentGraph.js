@@ -5,7 +5,7 @@ module.exports = FragmentGraph;
 
 function FragmentGraph(options){
 	options = options || {};
-	options.mainNode = new FragColorNode();
+	options.mainNode = options.mainNode || new FragColorNode();
 	Graph.call(this, options);
 }
 FragmentGraph.prototype = Object.create(Graph.prototype);

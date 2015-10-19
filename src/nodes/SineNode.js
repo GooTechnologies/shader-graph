@@ -5,9 +5,7 @@ module.exports = SineNode;
 // Adds a vec4 uniform to the shader.
 function SineNode(options){
 	options = options || {};
-	Node.call(this, {
-		name: 'Sine'
-	});
+	Node.call(this, options);
 }
 SineNode.prototype = Object.create(Node.prototype);
 SineNode.prototype.constructor = SineNode;

@@ -280,9 +280,7 @@
 
 	function FragColorNode(options){
 		options = options || {};
-		Node.call(this, {
-			name: 'FragColor'
-		});
+		Node.call(this, options);
 	}
 	FragColorNode.prototype = Object.create(Node.prototype);
 	FragColorNode.prototype.constructor = FragColorNode;
@@ -336,12 +334,12 @@
 
 	function PositionNode(options){
 		options = options || {};
-		Node.call(this, {
-			name: 'Position'
-		});
+		Node.call(this, options);
 	}
 	PositionNode.prototype = Object.create(Node.prototype);
 	PositionNode.prototype.constructor = PositionNode;
+
+	Node.registerClass('position', PositionNode);
 
 	PositionNode.prototype.buildShader = function(){
 		return function(){
@@ -372,9 +370,7 @@
 	module.exports = UberFragNode;
 
 	function UberFragNode(){
-		Node.call(this, {
-			name: 'Uber'
-		});
+		Node.call(this, options);
 	}
 	UberFragNode.prototype = Object.create(Node.prototype);
 	UberFragNode.prototype.constructor = UberFragNode;
@@ -623,9 +619,7 @@
 	module.exports = UberVertNode;
 
 	function UberVertNode(){
-		Node.call(this, {
-			name: 'UberFrag'
-		});
+		Node.call(this, options);
 	}
 	UberVertNode.prototype = Object.create(Node.prototype);
 	UberVertNode.prototype.constructor = UberVertNode;
@@ -809,9 +803,7 @@
 	// A vector with four components/values.
 	function Vector4Node(options){
 		options = options || {};
-		Node.call(this, {
-			name: 'Vector4'
-		});
+		Node.call(this, options);
 		this.defaultValue = options.defaultValue ? options.defaultValue.slice(0) : [0,0,0,0];
 	}
 	Vector4Node.prototype = Object.create(Node.prototype);
@@ -867,9 +859,7 @@
 	// A vector with four components/values.
 	function ValueNode(options){
 		options = options || {};
-		Node.call(this, {
-			name: 'Value'
-		});
+		Node.call(this, options);
 		this.value = options.value || 0;
 	}
 	ValueNode.prototype = Object.create(Node.prototype);
@@ -903,9 +893,7 @@
 
 	function UVNode(options){
 		options = options || {};
-		Node.call(this, {
-			name: 'UV'
-		});
+		Node.call(this, options);
 	}
 	UVNode.prototype = Object.create(Node.prototype);
 	UVNode.prototype.constructor = UVNode;
@@ -1022,9 +1010,7 @@
 	// Adds a vec4 uniform to the shader.
 	function TimeNode(options){
 		options = options || {};
-		Node.call(this, {
-			name: 'Time'
-		});
+		Node.call(this, options);
 	}
 	TimeNode.prototype = Object.create(Node.prototype);
 	TimeNode.prototype.constructor = TimeNode;
@@ -1075,9 +1061,7 @@
 	// Adds a vec4 uniform to the shader.
 	function SineNode(options){
 		options = options || {};
-		Node.call(this, {
-			name: 'Sine'
-		});
+		Node.call(this, options);
 	}
 	SineNode.prototype = Object.create(Node.prototype);
 	SineNode.prototype.constructor = SineNode;
@@ -1128,9 +1112,7 @@
 	// Adds a vec4 uniform to the shader.
 	function MultiplyNode(options){
 		options = options || {};
-		Node.call(this, {
-			name: 'Multiply'
-		});
+		Node.call(this, options);
 	}
 	MultiplyNode.prototype = Object.create(Node.prototype);
 	MultiplyNode.prototype.constructor = MultiplyNode;
@@ -1182,7 +1164,7 @@
 
 	function FragmentGraph(options){
 		options = options || {};
-		options.mainNode = new FragColorNode();
+		options.mainNode = options.mainNode || new FragColorNode();
 		Graph.call(this, options);
 	}
 	FragmentGraph.prototype = Object.create(Graph.prototype);
@@ -1474,12 +1456,16 @@
 
 	module.exports = GraphShader;
 
-	function GraphShader(){
+	function GraphShader(options){
+		options = options || {};
+		
 		this.fragmentGraph = new FragmentGraph({
-			shader: this
+			shader: this,
+			mainNode: options.fragMainNode
 		});
 		this.vertexGraph = new VertexGraph({
-			shader: this
+			shader: this,
+			mainNode: options.vertexMainNode
 		});
 	}
 
@@ -1534,7 +1520,7 @@
 	module.exports = VertexGraph;
 
 	function VertexGraph(options){
-		options.mainNode = new PositionNode();
+		options.mainNode = options.mainNode || new PositionNode();
 		Graph.call(this, options);
 	}
 	VertexGraph.prototype = Object.create(Graph.prototype);

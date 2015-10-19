@@ -3,12 +3,16 @@ var VertexGraph = require('./VertexGraph');
 
 module.exports = GraphShader;
 
-function GraphShader(){
+function GraphShader(options){
+	options = options || {};
+	
 	this.fragmentGraph = new FragmentGraph({
-		shader: this
+		shader: this,
+		mainNode: options.fragMainNode
 	});
 	this.vertexGraph = new VertexGraph({
-		shader: this
+		shader: this,
+		mainNode: options.vertexMainNode
 	});
 }
 

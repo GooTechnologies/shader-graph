@@ -65,7 +65,8 @@
                                 connect={this.connect}
                                 disconnect={this.disconnect}
                                 updateNodeData={this.updateNodeData}
-                                initialize={this.initialize} />
+                                initialize={this.initialize}
+                                onDoubleClickNode={this.removeNode} />
                         </div>
                     </div>
                 );
@@ -105,6 +106,19 @@
                 }
                 this.setState(state);
                 return node.id;
+            },
+            removeNode: function(id){
+                var state = this.state;
+                var node = this.shader.fragmentGraph.getNodeById(id);
+                this.shader.fragmentGraph.removeNode(node);
+                var nodeToRemove = state.nodes.find(function(node){
+                    return node.id === id;
+                });
+                var idx = state.nodes.indexOf(nodeToRemove);
+                if(idx !== -1){
+                   state.nodes.splice(idx, 1);
+                }
+                this.setState(state);
             },
             updateNodeData: function(id, data){
                 var node = this.state.nodes.find(function(node){
@@ -269,6 +283,7 @@
                         inputB: info.target.innerHTML
                     };
                 }
+
                 instance.bind("click", function (c) {
                     var info = getConnectionInfo(c);
                     component.props.disconnect(info.nodeA, info.outputA, info.nodeB, info.inputB);
@@ -304,6 +319,7 @@
                   {nodes.map(function(node) {
                     return (
                         <Node
+                            onDoubleClick={this.props.onDoubleClickNode}
                             updateNodeData={this.props.updateNodeData}
                             instance={this.props.instance}
                             key={node.id}
@@ -349,6 +365,15 @@
                         allowLoopback: false
                     });
                 }
+
+                el.addEventListener('dblclick', this.dblClickListener = function(){
+                    this.props.onDoubleClick(this.props.data.id);
+                    console.log('double clicked ' + this.props.data.id);
+                }.bind(this));
+            },
+            componentWillUnmount: function(){
+                var el = ReactDOM.findDOMNode(this);
+                el.removeEventListener('dblclick', this.dblClickListener);
             },
             render: function() {
                 var inputs = this.props.shader.fragmentGraph.getNodeById(this.props.data.id).getInputPorts().map(function(key){

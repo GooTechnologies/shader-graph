@@ -36,7 +36,7 @@
     <script src="js/goo.js"></script>
     <script src="../build/shadergraph.js"></script>
     <script type="text/babel">
-
+        var ignoreConnectionEvents = false;
         var App = React.createClass({
             getInitialState: function(){
                 return {
@@ -46,7 +46,11 @@
             },
             render: function() {
                 var shader = this.updateShader();
-                var nodeTypes = Object.keys(ShaderGraph.Node.classes).sort();
+                this.updateConnections();
+                var nodeTypes = Object.keys(ShaderGraph.Node.classes).sort().filter(function(type){
+                    // Should not list the main node
+                    return type !== 'fragColor' && type !== 'position'
+                });
                 return (
                     <div className="row">
                         <div className="col-xs-3">
@@ -74,7 +78,7 @@
                 );
             },
             updateShader: function(){
-                    console.log('udpateshader')
+
                 // Find the main node
                 var fragColorNodeData = this.state.nodes.find(function(node){
                     return node.type === 'fragColor';
@@ -115,7 +119,7 @@
                     nB.connect(conn.inputB, nA, conn.outputA);
                 }, this);
 
-                return shader; 
+                return shader
             },
             initialize: function(instance){
                 this.instance = instance;
@@ -127,6 +131,21 @@
                 });
 
                 this.setState(this.state);
+            },
+            updateConnections: function(){
+                if(this.instance){
+                    var instance = this.instance;
+                    ignoreConnectionEvents = true;
+                    instance.detachEveryConnection();
+                    this.state.connections.forEach(function(conn){
+                        instance.connect({
+                            source: conn.outputA + conn.nodeA,
+                            target: conn.inputB + conn.nodeB,
+                            type: "basic"
+                        });
+                    }, this);
+                    ignoreConnectionEvents = false;
+                }
             },
             generateId: function(){
                 if(this.idCounter === undefined){
@@ -150,8 +169,18 @@
                 return node.id;
             },
             removeNode: function(id){
-                // TODO: Remove the connections connected
                 var state = this.state;
+                
+                // Remove the connections connected
+                state.connections.filter(function(conn){
+                    return conn.nodeA == id || conn.nodeB == id;
+                }).forEach(function(conn){
+                    var idx = state.connections.indexOf(conn);
+                    if(idx !== -1){
+                        state.connections.splice(idx, 1);
+                    }
+                });
+
                 var nodeToRemove = state.nodes.find(function(node){
                     return node.id === id;
                 });
@@ -319,29 +348,39 @@
                 }
 
                 instance.bind("click", function (c) {
-                    var info = getConnectionInfo(c);
-                    component.props.disconnect(info.nodeA, info.outputA, info.nodeB, info.inputB);
-                    instance.detach(c);
-                });
-
-                instance.bind("connection", function (c) {
-                    var info = getConnectionInfo(c);
-                    if(!component.props.connect(info.nodeA, info.outputA, info.nodeB, info.inputB)){
+                    if(!ignoreConnectionEvents){
+                        var info = getConnectionInfo(c);
+                        component.props.disconnect(info.nodeA, info.outputA, info.nodeB, info.inputB);
                         instance.detach(c);
                     }
                 });
 
+                instance.bind("beforeDrop", function (c) {
+                    var reg = /([^\d]+)(\d+)/;
+                    var m = c.sourceId.match(reg);
+                    var outputA = m[1];
+                    var nodeA = m[2];
+
+                    m = c.targetId.match(reg);
+                    var inputB = m[1];
+                    var nodeB = m[2];
+
+                    //var info = getConnectionInfo(c);
+                    if(!ignoreConnectionEvents && !component.props.connect(nodeA, outputA, nodeB, inputB)){
+                    }
+                    return false;
+                });
+
+                // instance.bind("connection", function (c) {
+                //     var info = getConnectionInfo(c);
+                //     if(!ignoreConnectionEvents && !component.props.connect(info.nodeA, info.outputA, info.nodeB, info.inputB)){
+                //         instance.detach(c);
+                //     }
+                // });
+
                 // suspend drawing and initialize.
                 instance.batch(function () {
                     // Connect initial connections
-                    this.props.connections.forEach(function(conn){
-                        instance.connect({
-                            source: conn.nodeA + conn.outputA,
-                            target: conn.nodeB + conn.inputB,
-                            type: "basic"
-                        });
-                    }, this);
-
                     this.props.initialize(instance);
 
                 }.bind(this));

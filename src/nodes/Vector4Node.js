@@ -42,9 +42,10 @@ Vector4Node.prototype.getOutputVarNames = function(key){
 };
 
 Vector4Node.prototype.render = function(){
-	var r = this.getInputVariableNames('r')[0] || "0";
-	var g = this.getInputVariableNames('g')[0] || "0";
-	var b = this.getInputVariableNames('b')[0] || "0";
-	var a = this.getInputVariableNames('a')[0] || "1";
-	return this.getOutputVariableNames('rgba')[0] + ' = vec4(' + r + ',' + g + ',' + b + ',' + a + ');';
+	var r = this.getInputVariableName('r') || "0";
+	var g = this.getInputVariableName('g') || "0";
+	var b = this.getInputVariableName('b') || "0";
+	var a = this.getInputVariableName('a') || "1";
+	var outVarName = this.getOutputVariableNames('rgba')[0];
+	return outVarName ? outVarName + ' = vec4(' + r + ',' + g + ',' + b + ',' + a + ');' : '';
 };

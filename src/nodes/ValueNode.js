@@ -23,5 +23,6 @@ ValueNode.prototype.getOutputTypes = function(key){
 };
 
 ValueNode.prototype.render = function(){
-	return this.getOutputVariableNames('value')[0] + ' = ' + this._numberToGLSL(this.value) + ';';
+	var outVarName = this.getOutputVariableNames('value')[0];
+	return outVarName ? outVarName + ' = ' + this._numberToGLSL(this.value) + ';' : '';
 };

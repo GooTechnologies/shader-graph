@@ -57,10 +57,6 @@ UVNode.prototype.getOutputTypes = function(key){
 	return types;
 };
 
-UVNode.prototype.getOutputVarNames = function(key){
-	return key === 'uv' ? ['uv' + this.id] : [];
-};
-
 UVNode.prototype.render = function(){
 	var source = [];
 

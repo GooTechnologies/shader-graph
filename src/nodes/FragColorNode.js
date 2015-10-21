@@ -20,11 +20,12 @@ FragColorNode.prototype.getInputTypes = function(key){
 };
 
 FragColorNode.prototype.getInputVarNames = function(key){
-	if(key === 'rgba'){
+	if(key === 'rgba' && this.inputPortIsConnected(key)){
 		// Get the ID of the node connected
 		var connectedNode = this.graph.getNodeConnectedToInputPort(this, key);
-		if(connectedNode)
+		if(connectedNode){
 			return  ['rgba' + connectedNode.id];
+		}
 	}
 	return [];
 };

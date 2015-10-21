@@ -54,6 +54,11 @@ Graph.prototype.inputPortIsConnected = function(node, inputPort){
 		return conn.toNode === node && conn.toPortKey === inputPort;
 	});
 };
+Graph.prototype.outputPortIsConnected = function(node, outputPort){
+	return this.connections.some(function (conn){
+		return conn.fromNode === node && conn.fromPortKey === outputPort;
+	});
+};
 
 Graph.prototype.getNodeConnectedToInputPort = function(node, inputPort){
 	var connection = this.connections.filter(function (conn){
@@ -147,10 +152,13 @@ Graph.prototype.renderConnectionVariableDeclarations = function(){
 		var outputPorts = node.getOutputPorts();
 		for (var k = 0; k < outputPorts.length; k++) {
 			var key = outputPorts[k];
-			var types = node.getOutputTypes(key);
-			var names = node.getOutputVariableNames(key);
-			for (j = 0; j < types.length; j++) {
-				shaderSource.push(types[j] + ' ' + names[j] + ';');
+			// is the output port connected?
+			if(this.outputPortIsConnected(node, key)){
+				var types = node.getOutputTypes(key);
+				var names = node.getOutputVariableNames(key);
+				for (j = 0; j < names.length; j++) {
+					shaderSource.push(types[j] + ' ' + names[j] + ';');
+				}
 			}
 		}
 	}

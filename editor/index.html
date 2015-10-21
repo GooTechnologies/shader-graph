@@ -72,7 +72,7 @@
                                 disconnect={this.disconnect}
                                 updateNodeData={this.updateNodeData}
                                 initialize={this.initialize}
-                                onDoubleClickNode={this.removeNode} />
+                                onClickRemoveNode={this.removeNode} />
                         </div>
                     </div>
                 );
@@ -100,7 +100,8 @@
                     this.shader.fragmentGraph.addNode(node);
                     switch(nodeData.type){
                     case 'value':
-                        node.value = parseFloat(nodeData.value);
+                        var v = parseFloat(nodeData.value);
+                        node.value = isNaN(v) ? 0 : v;
                         break;
                     }
                 }, this);
@@ -171,6 +172,13 @@
             removeNode: function(id){
                 var state = this.state;
                 
+                var nodeToRemove = state.nodes.find(function(node){
+                    return node.id === id;
+                });
+                if(!nodeToRemove || nodeToRemove.type === 'fragColor'){
+                    return false;
+                }
+
                 // Remove the connections connected
                 state.connections.filter(function(conn){
                     return conn.nodeA == id || conn.nodeB == id;
@@ -181,14 +189,13 @@
                     }
                 });
 
-                var nodeToRemove = state.nodes.find(function(node){
-                    return node.id === id;
-                });
                 var idx = state.nodes.indexOf(nodeToRemove);
                 if(idx !== -1){
                    state.nodes.splice(idx, 1);
                 }
                 this.setState(state);
+
+                return true;
             },
             updateNodeData: function(id, data){
                 var node = this.state.nodes.find(function(node){
@@ -292,6 +299,14 @@
                 var camera = new goo.Camera();
                 var entity = gooRunner.world.createEntity(camera, [0,0,3]).addToWorld();
                 world.createEntity(new goo.PointLight(), [-100, 100, 100]).addToWorld();
+
+                // Load example texture
+                new goo.TextureCreator().loadTexture2D('images/chesterfield.png').then(function (texture) {
+                    this.sampleTexture = texture;
+                    this.updateShader();
+                }.bind(this), function () {
+                    console.error('Error loading image.');
+                });
             },
             render: function() {
                 this.updateShader();
@@ -304,6 +319,13 @@
                     var shaderDef = this.props.shader.buildShader();
                     console.log(shaderDef.fshader())
                     var material = new goo.Material(shaderDef);
+                    if(this.sampleTexture){
+                        for(var key in shaderDef.uniforms){
+                            if(shaderDef.uniforms[key].indexOf('TEXTURE') !== -1){ // todo: make nicer
+                                material.setTexture(shaderDef.uniforms[key], this.sampleTexture);
+                            }
+                        }
+                    }
                     this.entity.meshRendererComponent.materials[0] = material;
                 }
             }
@@ -365,18 +387,10 @@
                     var inputB = m[1];
                     var nodeB = m[2];
 
-                    //var info = getConnectionInfo(c);
                     if(!ignoreConnectionEvents && !component.props.connect(nodeA, outputA, nodeB, inputB)){
                     }
                     return false;
                 });
-
-                // instance.bind("connection", function (c) {
-                //     var info = getConnectionInfo(c);
-                //     if(!ignoreConnectionEvents && !component.props.connect(info.nodeA, info.outputA, info.nodeB, info.inputB)){
-                //         instance.detach(c);
-                //     }
-                // });
 
                 // suspend drawing and initialize.
                 instance.batch(function () {
@@ -393,7 +407,7 @@
                     return (
                         <Node
                             updateShader={this.props.updateShader}
-                            onDoubleClick={this.props.onDoubleClickNode}
+                            onClickRemove={node.type !== 'fragColor' ? this.props.onClickRemoveNode : undefined }
                             updateNodeData={this.props.updateNodeData}
                             instance={this.props.instance}
                             key={node.id}
@@ -439,15 +453,6 @@
                         allowLoopback: false
                     });
                 }
-
-                el.addEventListener('dblclick', this.dblClickListener = function(){
-                    this.props.onDoubleClick(this.props.data.id);
-                    console.log('double clicked ' + this.props.data.id);
-                }.bind(this));
-            },
-            componentWillUnmount: function(){
-                var el = ReactDOM.findDOMNode(this);
-                el.removeEventListener('dblclick', this.dblClickListener);
             },
             render: function() {
                 var shader = this.props.updateShader();
@@ -462,9 +467,17 @@
                         <div className="out" key={key} id={key + this.props.data.id}>{key}</div>
                     );
                 }, this) : undefined;
+
+                var removeButton = this.props.onClickRemove ? (
+                    <span className="glyphicon glyphicon-remove remove-button pull-right" onClick={this.handleClickRemove}></span>
+                ) : undefined;
+
                 return (
                     <div className="w" data-node-id={this.props.data.id}>
-                        <div className="title">{this.props.data.type}</div>
+                        <div className="title">
+                            {this.props.data.type}
+                            {removeButton}
+                        </div>
                         <div className="inputs">
                             {inputs}
                         </div>
@@ -488,6 +501,9 @@
                 this.props.updateNodeData(this.props.data.id, {
                     value: evt.target.value
                 })
+            },
+            handleClickRemove: function(){
+                this.props.onClickRemove(this.props.data.id);
             }
           });
 

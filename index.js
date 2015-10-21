@@ -11,6 +11,7 @@ module.exports = {
 	TimeNode: require('./src/nodes/TimeNode'),
 	SineNode: require('./src/nodes/SineNode'),
 	MultiplyNode: require('./src/nodes/MultiplyNode'),
+	TextureNode: require('./src/nodes/TextureNode'),
 
 	Attribute: require('./src/Attribute'),
 	Connection: require('./src/Connection'),
@@ -18,7 +19,7 @@ module.exports = {
 	Graph: require('./src/Graph'),
 	GraphShader: require('./src/GraphShader'),
 	Uniform: require('./src/Uniform'),
-	Varying: require('./src/Varying'),
+	Varying: require('./src/Varying')
 
 };
 

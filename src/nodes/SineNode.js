@@ -28,13 +28,9 @@ SineNode.prototype.getInputTypes = function(key){
 	return key === 'x' ? ['float'] : [];
 };
 
-SineNode.prototype.getOutputVarNames = function(key){
-	return key === 'y' ? ['y' + this.id] : [];
-};
-
 SineNode.prototype.render = function(){
-	var outVarName = this.getOutputVarNames('y')[0];
-	var inVarName = this.getInputVariableNames('x')[0];
+	var outVarName = this.getOutputVariableNames('y')[0];
+	var inVarName = this.getInputVariableName('x');
 	if(outVarName && inVarName){
 		return outVarName + ' = sin(' + inVarName + ');';
 	} else if(outVarName){

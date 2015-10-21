@@ -50,15 +50,31 @@ Node.prototype.canBuildShader = function(){
 	return false;
 };
 
-Node.prototype.getOutputVariableNames = function(key){
-	return [key + this.id]; // todo really an array?
+Node.prototype.outputPortIsConnected = function(key){
+	return this.graph.outputPortIsConnected(this, key);
 };
 
-Node.prototype.getInputVariableNames = function(key){
+Node.prototype.inputPortIsConnected = function(key){
+	return this.graph.inputPortIsConnected(this, key);
+};
+
+Node.prototype.getOutputVariableNames = function(key){
+	return this.outputPortIsConnected(key) ? [key + this.id] : []; // todo really an array?
+};
+
+Node.prototype.getInputVariableName = function(key){
 	var connectedNode = this.graph.getNodeConnectedToInputPort(this, key);
 	if(connectedNode){
 		var portKey = this.graph.getPortKeyConnectedToInputPort(this, key);
-		return  [portKey + connectedNode.id];
+		return portKey + connectedNode.id;
+	}
+};
+
+Node.prototype.getInputVariableTypes = function(key){
+	var connectedNode = this.graph.getNodeConnectedToInputPort(this, key);
+	if(connectedNode){
+		var portKey = this.graph.getPortKeyConnectedToInputPort(this, key);
+		return connectedNode.getOutputTypes(portKey);
 	}
 	return [];
 };

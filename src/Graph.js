@@ -123,7 +123,9 @@ Graph.prototype.renderNodeCodes = function(){
 		node = nodes[i];
 		if(node !== this.mainNode){ // Save main node until last
 			var nodeSource = node.render();
-			shaderSource.push('{', nodeSource, '}');
+			if(nodeSource){
+				shaderSource.push('{ // node ' + node.id + ', ' + node.constructor.type, nodeSource, '}');
+			}
 		}
 	}
 	return shaderSource.join('\n');

@@ -188,7 +188,3 @@ Node.prototype.buildShader = function(){
 
 	}.bind(this);
 };
-
-Node.prototype._numberToGLSL = function(n){
-	return (n+'').indexOf('.') === -1 ? n+'.0' : n+'';
-};

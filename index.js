@@ -12,7 +12,9 @@ module.exports = {
 	SineNode: require('./src/nodes/SineNode'),
 	MultiplyNode: require('./src/nodes/MultiplyNode'),
 	TextureNode: require('./src/nodes/TextureNode'),
+	AppendNode: require('./src/nodes/AppendNode'),
 
+	Utils: require('./src/Utils'),
 	Attribute: require('./src/Attribute'),
 	Connection: require('./src/Connection'),
 	FragmentGraph: require('./src/FragmentGraph'),

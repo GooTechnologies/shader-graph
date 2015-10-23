@@ -57,13 +57,15 @@
 		TimeNode: __webpack_require__(13),
 		SineNode: __webpack_require__(14),
 		MultiplyNode: __webpack_require__(15),
-		TextureNode: __webpack_require__(21),
+		TextureNode: __webpack_require__(16),
+		AppendNode: __webpack_require__(23),
 
+		Utils: __webpack_require__(17),
 		Attribute: __webpack_require__(11),
 		Connection: __webpack_require__(2),
-		FragmentGraph: __webpack_require__(16),
-		Graph: __webpack_require__(17),
-		GraphShader: __webpack_require__(19),
+		FragmentGraph: __webpack_require__(18),
+		Graph: __webpack_require__(19),
+		GraphShader: __webpack_require__(21),
 		Uniform: __webpack_require__(7),
 		Varying: __webpack_require__(12)
 
@@ -268,10 +270,6 @@
 		}.bind(this);
 	};
 
-	Node.prototype._numberToGLSL = function(n){
-		return (n+'').indexOf('.') === -1 ? n+'.0' : n+'';
-	};
-
 /***/ },
 /* 2 */
 /***/ function(module, exports) {
@@ -312,21 +310,10 @@
 		return ['vec4'];
 	};
 
-	FragColorNode.prototype.getInputVarNames = function(key){
-		if(key === 'rgba' && this.inputPortIsConnected(key)){
-			// Get the ID of the node connected
-			var connectedNode = this.graph.getNodeConnectedToInputPort(this, key);
-			if(connectedNode){
-				return  ['rgba' + connectedNode.id];
-			}
-		}
-		return [];
-	};
-
 	FragColorNode.prototype.buildShader = function(){
 		return function(){
 			this.graph.sortNodes();
-			var input = (this.getInputVarNames('rgba')[0] || 'vec4(1)');
+			var input = (this.getInputVariableName('rgba') || 'vec4(1)');
 			return [
 				this.graph.renderVaryingDeclarations(),
 				this.graph.renderUniformDeclarations(),
@@ -852,10 +839,6 @@
 		return key === 'rgba' ? ['vec4'] : [];
 	};
 
-	Vector4Node.prototype.getOutputVarNames = function(key){
-		return key === 'rgba' ? ['rgba' + this.id] : [];
-	};
-
 	Vector4Node.prototype.render = function(){
 		var r = this.getInputVariableName('r') || "0";
 		var g = this.getInputVariableName('g') || "0";
@@ -872,6 +855,7 @@
 
 	var Node = __webpack_require__(1);
 	var Uniform = __webpack_require__(7);
+	var Utils = __webpack_require__(17);
 
 	module.exports = ValueNode;
 
@@ -896,7 +880,7 @@
 
 	ValueNode.prototype.render = function(){
 		var outVarName = this.getOutputVariableNames('value')[0];
-		return outVarName ? outVarName + ' = ' + this._numberToGLSL(this.value) + ';' : '';
+		return outVarName ? outVarName + ' = ' + Utils.numberToGlslFloat(this.value) + ';' : '';
 	};
 
 
@@ -1041,10 +1025,6 @@
 		return key === 'time' ? ['float'] : [];
 	};
 
-	TimeNode.prototype.getOutputVarNames = function(key){
-		return key === 'time' ? ['time' + this.id] : [];
-	};
-
 	TimeNode.prototype.getUniforms = function(){
 		var uniforms = [
 			new Uniform({
@@ -1057,7 +1037,7 @@
 	};
 
 	TimeNode.prototype.render = function(){
-		var outVarName = this.getOutputVarNames('time')[0];
+		var outVarName = this.getOutputVariableNames('time')[0];
 		if(outVarName){
 			return outVarName + ' = ' + this.getUniforms()[0].name + ';';
 		} else {
@@ -1071,6 +1051,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(17);
 
 	module.exports = SineNode;
 
@@ -1084,6 +1065,13 @@
 
 	Node.registerClass('sine', SineNode);
 
+	SineNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
 	SineNode.prototype.getInputPorts = function(key){
 		return ['x'];
 	};
@@ -1092,21 +1080,30 @@
 		return ['y'];
 	};
 
+	// Output type is same as what we get in.
 	SineNode.prototype.getOutputTypes = function(key){
-		return key === 'y' ? ['float'] : [];
+		var types = [];
+		if(key === 'y'){
+			types = this.inputPortIsConnected('x') ? this.getInputVariableTypes('x') : ['float'];
+		}
+		return types;
 	};
 
 	SineNode.prototype.getInputTypes = function(key){
-		return key === 'x' ? ['float'] : [];
+		return key === 'x' ? SineNode.supportedTypes : [];
 	};
 
 	SineNode.prototype.render = function(){
 		var outVarName = this.getOutputVariableNames('y')[0];
+		var outVarType = this.getOutputTypes('y')[0];
+
 		var inVarName = this.getInputVariableName('x');
+		var inVarType = this.getInputVariableTypes('x')[0];
+
 		if(outVarName && inVarName){
-			return outVarName + ' = sin(' + inVarName + ');';
+			return outVarName + ' = sin(' + Utils.convertGlslType(inVarName, inVarType, outVarType) + ');';
 		} else if(outVarName){
-			return outVarName + ' = 0.0;';
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outVarType) + ';';
 		} else {
 			return '';
 		}
@@ -1118,6 +1115,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(17);
 
 	module.exports = MultiplyNode;
 
@@ -1131,6 +1129,13 @@
 
 	Node.registerClass('multiply', MultiplyNode);
 
+	MultiplyNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
 	MultiplyNode.prototype.getInputPorts = function(key){
 		return ['a', 'b'];
 	};
@@ -1139,50 +1144,45 @@
 		return ['product'];
 	};
 
+	// Output types depends on what we get in.
+	// Always output the largest vector type of the two inputs.
 	MultiplyNode.prototype.getOutputTypes = function(key){
 		var types = [];
-		switch(key){
-		case 'product':
-			types = ['float', 'vec2', 'vec3', 'vec4'];
-			var inVarName = this.getInputVariableName('a') || this.getInputVariableName('b');
-			if(inVarName){
-				// Something is connected to the input - restrict
-				var incomingTypes = this.getInputVariableTypes('a').length ? this.getInputVariableTypes('a') : this.getInputVariableTypes('b');
-				types = incomingTypes.filter(function(type){
-					return types.indexOf(type) !== -1;
-				});
+		if(key === 'product'){
+			if(this.inputPortIsConnected('a') || this.inputPortIsConnected('b')){
+				// Something is connected to the input - choose the vector type of largest dimension
+				types = [
+					Utils.getHighestDimensionVectorType(
+						this.getInputVariableTypes('a').concat(this.getInputVariableTypes('b'))
+					)
+				];
+			} else {
+				// Nothing connected - use default float type
+				types = ['float'];
 			}
-			break;
 		}
 		return types;
 	};
 
 	MultiplyNode.prototype.getInputTypes = function(key){
-		var types = [];
-		switch(key){
-		case 'a':
-		case 'b':
-			var outVarName = this.getOutputVariableNames(key)[0];
-			if(outVarName){
-				var outTypes = this.getOutputVariableTypes(key);
-				types = outTypes;
-			} else {
-				types = ['float', 'vec2', 'vec3', 'vec4'];
-			}
-			break;
-		}
-		return types;
+		return (key === 'a' || key === 'b') ? MultiplyNode.supportedTypes : [];
 	};
 
 	MultiplyNode.prototype.render = function(){
 		var inVarNameA = this.getInputVariableName('a');
+		var inVarTypeA = this.getInputVariableTypes('a')[0];
+		
 		var inVarNameB = this.getInputVariableName('b');
+		var inVarTypeB = this.getInputVariableTypes('b')[0];
+
 		var outVarName = this.getOutputVariableNames('product')[0];
+		var outVarType = this.getOutputTypes('product')[0];
+
 		if(inVarNameA && inVarNameB && outVarName){
-			return outVarName + ' = ' + inVarNameA + ' * ' + inVarNameB + ';';
+			return outVarName + ' = ' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + ' * ' + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType) + ';';
 		} else if(outVarName){
 			var outType = this.getOutputTypes('product')[0];
-			return outVarName + ' = ' + outType + '(0);';
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outType) + ';';
 		} else {
 			return '';
 		}
@@ -1193,7 +1193,135 @@
 /* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Graph = __webpack_require__(17);
+	var Node = __webpack_require__(1);
+	var Uniform = __webpack_require__(7);
+	var Attribute = __webpack_require__(11);
+	var Varying = __webpack_require__(12);
+
+	module.exports = TextureNode;
+
+	function TextureNode(options){
+		options = options || {};
+		Node.call(this, options);
+	}
+	TextureNode.prototype = Object.create(Node.prototype);
+	TextureNode.prototype.constructor = TextureNode;
+
+	Node.registerClass('texture', TextureNode);
+
+	TextureNode.prototype.getInputPorts = function(key){
+		return ['uv'];
+	};
+
+	TextureNode.prototype.getInputTypes = function(key){
+		var types = [];
+		switch(key){
+		case 'uv':
+			types = ['vec2'];
+			break;
+		}
+		return types;
+	};
+
+	TextureNode.prototype.getOutputPorts = function(key){
+		return ['rgba'];
+	};
+
+	TextureNode.prototype.getOutputTypes = function(key){
+		var types = [];
+		switch(key){
+		case 'rgba':
+			types = ['vec4'];
+			break;
+		}
+		return types;
+	};
+
+	TextureNode.prototype.getUniforms = function(){
+		return [
+			new Uniform({
+				name: 'texture' + this.id,
+				type: 'sampler2D',
+				defaultValue: 'TEXTURE' + this.id
+			})
+		];
+	};
+
+	TextureNode.prototype.render = function(){
+		var source = [];
+		var outName = this.getOutputVariableNames('rgba')[0];
+		var inName = this.getInputVariableName('uv');
+		if(outName && inName){
+			source.push(outName + ' = texture2D(texture' + this.id + ', vec2(' + inName + '));');
+		} else if(outName){
+			source.push(outName + ' = vec4(0,0,0,1);');
+		}
+
+		return source.join('\n');
+	};
+
+
+/***/ },
+/* 17 */
+/***/ function(module, exports) {
+
+	module.exports = Utils;
+
+	function Utils(){}
+
+	// Utils.arrayIntersect(['a', 'b', 'c'], ['a', 'c']) => ['a', 'c']
+	Utils.arrayIntersect = function(a, b){
+		return a.filter(function (item){
+			return b.indexOf(item) !== -1;
+		});
+	};
+
+	// Utils.getHighestDimensionVectorType(['float', 'vec2', 'vec3']) => 'vec3'
+	Utils.getHighestDimensionVectorType = function(array){
+		return array.sort().reverse()[0];
+	};
+
+	// Utils.numberToGlslFloat(2) => '2.0'
+	Utils.numberToGlslFloat = function(n){
+		return (n+'').indexOf('.') === -1 ? n+'.0' : n+'';
+	};
+
+	var expressionTable = {
+		'float': {
+			'float': 'X',
+			'vec2': 'vec2(X)',
+			'vec3': 'vec3(X)',
+			'vec4': 'vec4(X)'
+		},
+		'vec2': {
+			'float': 'X.x',
+			'vec2': 'X',
+			'vec3': 'vec3(X,0)',
+			'vec4': 'vec4(X,0,0)'
+		},
+		'vec3': {
+			'float': 'X.x',
+			'vec2': 'X.xy',
+			'vec3': 'X',
+			'vec4': 'vec4(X,0)'
+		},
+		'vec4': {
+			'float': 'X.x',
+			'vec2': 'X.xy',
+			'vec3': 'X.xyz',
+			'vec4': 'X'
+		}
+	}
+
+	Utils.convertGlslType = function(expression, type, newType){
+		return expressionTable[type][newType].replace('X', expression);
+	};
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Graph = __webpack_require__(19);
 	var FragColorNode = __webpack_require__(3);
 
 	module.exports = FragmentGraph;
@@ -1206,10 +1334,10 @@
 	FragmentGraph.prototype = Object.create(Graph.prototype);
 
 /***/ },
-/* 17 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toposort = __webpack_require__(18);
+	var toposort = __webpack_require__(20);
 
 	module.exports = Graph;
 
@@ -1334,7 +1462,9 @@
 			node = nodes[i];
 			if(node !== this.mainNode){ // Save main node until last
 				var nodeSource = node.render();
-				shaderSource.push('{', nodeSource, '}');
+				if(nodeSource){
+					shaderSource.push('{ // node ' + node.id + ', ' + node.constructor.type, nodeSource, '}');
+				}
 			}
 		}
 		return shaderSource.join('\n');
@@ -1427,7 +1557,7 @@
 	};
 
 /***/ },
-/* 18 */
+/* 20 */
 /***/ function(module, exports) {
 
 	
@@ -1492,11 +1622,11 @@
 
 
 /***/ },
-/* 19 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var FragmentGraph = __webpack_require__(16);
-	var VertexGraph = __webpack_require__(20);
+	var FragmentGraph = __webpack_require__(18);
+	var VertexGraph = __webpack_require__(22);
 
 	module.exports = GraphShader;
 
@@ -1553,11 +1683,11 @@
 	};
 
 /***/ },
-/* 20 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var PositionNode = __webpack_require__(4);
-	var Graph = __webpack_require__(17);
+	var Graph = __webpack_require__(19);
 	var Uniform = __webpack_require__(7);
 	var Attribute = __webpack_require__(11);
 
@@ -1597,80 +1727,112 @@
 	};
 
 /***/ },
-/* 21 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
 	var Uniform = __webpack_require__(7);
-	var Attribute = __webpack_require__(11);
-	var Varying = __webpack_require__(12);
 
-	module.exports = TextureNode;
+	module.exports = AppendNode;
 
-	function TextureNode(options){
+	// A vector with four components/values.
+	function AppendNode(options){
 		options = options || {};
 		Node.call(this, options);
 	}
-	TextureNode.prototype = Object.create(Node.prototype);
-	TextureNode.prototype.constructor = TextureNode;
+	AppendNode.prototype = Object.create(Node.prototype);
+	AppendNode.prototype.constructor = AppendNode;
 
-	Node.registerClass('texture', TextureNode);
+	Node.registerClass('append', AppendNode);
 
-	TextureNode.prototype.getInputPorts = function(key){
-		return ['uv'];
+	AppendNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
+	AppendNode.prototype.getInputPorts = function(){
+		var sum = this.getComponentSum();
+
+		console.log(sum)
+
+		if(!this.inputPortIsConnected('a'))
+			return ['a'];
+
+		else if(!this.inputPortIsConnected('b') && sum < 4)
+			return ['a', 'b'];
+
+		else if(!this.inputPortIsConnected('c') && sum < 4)
+			return ['a', 'b', 'c'];
+
+		else if(!this.inputPortIsConnected('d') && sum < 4)
+			return ['a', 'b', 'c', 'd'];
 	};
 
-	TextureNode.prototype.getInputTypes = function(key){
-		var types = [];
+	AppendNode.prototype.getOutputPorts = function(){
+		return ['out'];
+	};
+
+	AppendNode.prototype.getInputTypes = function(key){
+		//var sum = this.getComponentSum();
+		var types;
 		switch(key){
-		case 'uv':
-			types = ['vec2'];
+		case 'a':
+		case 'b':
+		case 'c':
+		case 'd':
+			types = AppendNode.supportedTypes.slice(0/*, 4 - sum*/);
 			break;
 		}
 		return types;
 	};
 
-	TextureNode.prototype.getOutputPorts = function(key){
-		return ['rgba'];
-	};
-
-	TextureNode.prototype.getOutputTypes = function(key){
-		var types = [];
-		switch(key){
-		case 'rgba':
-			types = ['vec4'];
-			break;
+	AppendNode.prototype.getComponentSum = function(){
+		var ports = 'abcd';
+		var weights = {
+			'float': 1,
+			'vec2': 2,
+			'vec3': 3,
+			'vec4': 4
+		};
+		var sum = 0;
+		for(var i=0; i<ports.length; i++){
+			var x = ports[i];
+			if(this.inputPortIsConnected(x)){
+				var type = this.getInputTypes(x)[0];
+				sum += weights[type];
+			}
 		}
-		return types;
+		return sum;
 	};
 
-	TextureNode.prototype.getOutputVariableNames = function(key){
-		return key === 'rgba' && this.outputPortIsConnected(key) ? ['rgba' + this.id] : [];
+	AppendNode.prototype.getOutputTypes = function(key){
+		console.log('getOutputTypes')
+		return key === 'out' ? [AppendNode.supportedTypes[this.getComponentSum() - 1]] : [];
 	};
 
-	TextureNode.prototype.getUniforms = function(){
-		return [
-			new Uniform({
-				name: 'texture' + this.id,
-				type: 'sampler2D',
-				defaultValue: 'TEXTURE' + this.id
-			})
-		];
-	};
+	AppendNode.prototype.render = function(){
+		console.log('render')
+		var a = this.getInputVariableName('a');
+		var b = this.getInputVariableName('b');
+		var c = this.getInputVariableName('c');
+		var d = this.getInputVariableName('d');
+		var vars = [];
+		if(a) vars.push(a);
+		if(b) vars.push(b);
+		if(c) vars.push(c);
+		if(d) vars.push(d);
 
-	TextureNode.prototype.render = function(){
-		var source = [];
-		var outName = this.getOutputVariableNames('rgba')[0];
-		var inName = this.getInputVariableName('uv');
-		if(outName && inName){
-			source.push(outName + ' = texture2D(texture' + this.id + ', vec2(' + inName + '));');
-		} else if(outName){
-			source.push(outName + ' = vec4(0,0,0,1);');
+		var outVarName = this.getOutputVariableNames('out')[0];
+		var outType = this.getOutputTypes()[0];
+
+		if(outVarName){
+			return outVarName + ' = ' + outType + '(' + vars.join(',') + ');';
 		}
 
-		return source.join('\n');
+		return '';
 	};
-
 
 /***/ }
 /******/ ]);

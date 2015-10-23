@@ -19,21 +19,10 @@ FragColorNode.prototype.getInputTypes = function(key){
 	return ['vec4'];
 };
 
-FragColorNode.prototype.getInputVarNames = function(key){
-	if(key === 'rgba' && this.inputPortIsConnected(key)){
-		// Get the ID of the node connected
-		var connectedNode = this.graph.getNodeConnectedToInputPort(this, key);
-		if(connectedNode){
-			return  ['rgba' + connectedNode.id];
-		}
-	}
-	return [];
-};
-
 FragColorNode.prototype.buildShader = function(){
 	return function(){
 		this.graph.sortNodes();
-		var input = (this.getInputVarNames('rgba')[0] || 'vec4(1)');
+		var input = (this.getInputVariableName('rgba') || 'vec4(1)');
 		return [
 			this.graph.renderVaryingDeclarations(),
 			this.graph.renderUniformDeclarations(),

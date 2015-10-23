@@ -42,10 +42,6 @@ TextureNode.prototype.getOutputTypes = function(key){
 	return types;
 };
 
-TextureNode.prototype.getOutputVariableNames = function(key){
-	return key === 'rgba' && this.outputPortIsConnected(key) ? ['rgba' + this.id] : [];
-};
-
 TextureNode.prototype.getUniforms = function(){
 	return [
 		new Uniform({

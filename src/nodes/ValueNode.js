@@ -1,5 +1,6 @@
 var Node = require('./Node');
 var Uniform = require('../Uniform');
+var Utils = require('../Utils');
 
 module.exports = ValueNode;
 
@@ -24,5 +25,5 @@ ValueNode.prototype.getOutputTypes = function(key){
 
 ValueNode.prototype.render = function(){
 	var outVarName = this.getOutputVariableNames('value')[0];
-	return outVarName ? outVarName + ' = ' + this._numberToGLSL(this.value) + ';' : '';
+	return outVarName ? outVarName + ' = ' + Utils.numberToGlslFloat(this.value) + ';' : '';
 };

@@ -21,10 +21,6 @@ TimeNode.prototype.getOutputTypes = function(key){
 	return key === 'time' ? ['float'] : [];
 };
 
-TimeNode.prototype.getOutputVarNames = function(key){
-	return key === 'time' ? ['time' + this.id] : [];
-};
-
 TimeNode.prototype.getUniforms = function(){
 	var uniforms = [
 		new Uniform({
@@ -37,7 +33,7 @@ TimeNode.prototype.getUniforms = function(){
 };
 
 TimeNode.prototype.render = function(){
-	var outVarName = this.getOutputVarNames('time')[0];
+	var outVarName = this.getOutputVariableNames('time')[0];
 	if(outVarName){
 		return outVarName + ' = ' + this.getUniforms()[0].name + ';';
 	} else {

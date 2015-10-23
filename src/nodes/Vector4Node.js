@@ -37,10 +37,6 @@ Vector4Node.prototype.getOutputTypes = function(key){
 	return key === 'rgba' ? ['vec4'] : [];
 };
 
-Vector4Node.prototype.getOutputVarNames = function(key){
-	return key === 'rgba' ? ['rgba' + this.id] : [];
-};
-
 Vector4Node.prototype.render = function(){
 	var r = this.getInputVariableName('r') || "0";
 	var g = this.getInputVariableName('g') || "0";

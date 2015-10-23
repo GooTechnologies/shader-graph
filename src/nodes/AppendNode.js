@@ -23,18 +23,20 @@ AppendNode.supportedTypes = [
 AppendNode.prototype.getInputPorts = function(){
 	var sum = this.getComponentSum();
 
-	console.log(sum)
+	var a = this.inputPortIsConnected('a');
+	var b = this.inputPortIsConnected('b');
+	var c = this.inputPortIsConnected('c');
+	var d = this.inputPortIsConnected('d');
 
-	if(!this.inputPortIsConnected('a'))
+	if(!a && !b && !c && !d)
 		return ['a'];
-
-	else if(!this.inputPortIsConnected('b') && sum < 4)
+	else if(a && !b && !c && !d && sum < 4)
 		return ['a', 'b'];
-
-	else if(!this.inputPortIsConnected('c') && sum < 4)
+	else if(a && b && !c && !d && sum < 4)
 		return ['a', 'b', 'c'];
-
-	else if(!this.inputPortIsConnected('d') && sum < 4)
+	else if(a && b && c && !d && sum < 4)
+		return ['a', 'b', 'c', 'd'];
+	else 
 		return ['a', 'b', 'c', 'd'];
 };
 
@@ -43,7 +45,6 @@ AppendNode.prototype.getOutputPorts = function(){
 };
 
 AppendNode.prototype.getInputTypes = function(key){
-	//var sum = this.getComponentSum();
 	var types;
 	switch(key){
 	case 'a':
@@ -76,12 +77,10 @@ AppendNode.prototype.getComponentSum = function(){
 };
 
 AppendNode.prototype.getOutputTypes = function(key){
-	console.log('getOutputTypes')
 	return key === 'out' ? [AppendNode.supportedTypes[this.getComponentSum() - 1]] : [];
 };
 
 AppendNode.prototype.render = function(){
-	console.log('render')
 	var a = this.getInputVariableName('a');
 	var b = this.getInputVariableName('b');
 	var c = this.getInputVariableName('c');
@@ -93,7 +92,7 @@ AppendNode.prototype.render = function(){
 	if(d) vars.push(d);
 
 	var outVarName = this.getOutputVariableNames('out')[0];
-	var outType = this.getOutputTypes()[0];
+	var outType = this.getOutputTypes('out')[0];
 
 	if(outVarName){
 		return outVarName + ' = ' + outType + '(' + vars.join(',') + ');';

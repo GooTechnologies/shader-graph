@@ -53,21 +53,21 @@
 		UberVertNode: __webpack_require__(6),
 		Vector4Node: __webpack_require__(8),
 		ValueNode: __webpack_require__(9),
-		UVNode: __webpack_require__(10),
-		TimeNode: __webpack_require__(13),
-		SineNode: __webpack_require__(14),
-		MultiplyNode: __webpack_require__(15),
-		TextureNode: __webpack_require__(16),
-		AppendNode: __webpack_require__(23),
+		UVNode: __webpack_require__(11),
+		TimeNode: __webpack_require__(14),
+		SineNode: __webpack_require__(15),
+		MultiplyNode: __webpack_require__(16),
+		TextureNode: __webpack_require__(17),
+		AppendNode: __webpack_require__(18),
 
-		Utils: __webpack_require__(17),
-		Attribute: __webpack_require__(11),
+		Utils: __webpack_require__(10),
+		Attribute: __webpack_require__(12),
 		Connection: __webpack_require__(2),
-		FragmentGraph: __webpack_require__(18),
-		Graph: __webpack_require__(19),
-		GraphShader: __webpack_require__(21),
+		FragmentGraph: __webpack_require__(19),
+		Graph: __webpack_require__(20),
+		GraphShader: __webpack_require__(22),
 		Uniform: __webpack_require__(7),
-		Varying: __webpack_require__(12)
+		Varying: __webpack_require__(13)
 
 	};
 
@@ -855,7 +855,7 @@
 
 	var Node = __webpack_require__(1);
 	var Uniform = __webpack_require__(7);
-	var Utils = __webpack_require__(17);
+	var Utils = __webpack_require__(10);
 
 	module.exports = ValueNode;
 
@@ -886,12 +886,68 @@
 
 /***/ },
 /* 10 */
+/***/ function(module, exports) {
+
+	module.exports = Utils;
+
+	function Utils(){}
+
+	// Utils.arrayIntersect(['a', 'b', 'c'], ['a', 'c']) => ['a', 'c']
+	Utils.arrayIntersect = function(a, b){
+		return a.filter(function (item){
+			return b.indexOf(item) !== -1;
+		});
+	};
+
+	// Utils.getHighestDimensionVectorType(['float', 'vec2', 'vec3']) => 'vec3'
+	Utils.getHighestDimensionVectorType = function(array){
+		return array.sort().reverse()[0];
+	};
+
+	// Utils.numberToGlslFloat(2) => '2.0'
+	Utils.numberToGlslFloat = function(n){
+		return (n+'').indexOf('.') === -1 ? n+'.0' : n+'';
+	};
+
+	var expressionTable = {
+		'float': {
+			'float': 'X',
+			'vec2': 'vec2(X)',
+			'vec3': 'vec3(X)',
+			'vec4': 'vec4(X)'
+		},
+		'vec2': {
+			'float': 'X.x',
+			'vec2': 'X',
+			'vec3': 'vec3(X,0)',
+			'vec4': 'vec4(X,0,0)'
+		},
+		'vec3': {
+			'float': 'X.x',
+			'vec2': 'X.xy',
+			'vec3': 'X',
+			'vec4': 'vec4(X,0)'
+		},
+		'vec4': {
+			'float': 'X.x',
+			'vec2': 'X.xy',
+			'vec3': 'X.xyz',
+			'vec4': 'X'
+		}
+	}
+
+	Utils.convertGlslType = function(expression, type, newType){
+		return expressionTable[type][newType].replace('X', expression);
+	};
+
+/***/ },
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
 	var Uniform = __webpack_require__(7);
-	var Attribute = __webpack_require__(11);
-	var Varying = __webpack_require__(12);
+	var Attribute = __webpack_require__(12);
+	var Varying = __webpack_require__(13);
 
 	module.exports = UVNode;
 
@@ -970,7 +1026,7 @@
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports) {
 
 	module.exports = Attribute;
@@ -984,7 +1040,7 @@
 	}
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 	module.exports = Varying;
@@ -999,7 +1055,7 @@
 	}
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
@@ -1047,11 +1103,11 @@
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
-	var Utils = __webpack_require__(17);
+	var Utils = __webpack_require__(10);
 
 	module.exports = SineNode;
 
@@ -1111,11 +1167,11 @@
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
-	var Utils = __webpack_require__(17);
+	var Utils = __webpack_require__(10);
 
 	module.exports = MultiplyNode;
 
@@ -1190,13 +1246,13 @@
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
 	var Uniform = __webpack_require__(7);
-	var Attribute = __webpack_require__(11);
-	var Varying = __webpack_require__(12);
+	var Attribute = __webpack_require__(12);
+	var Varying = __webpack_require__(13);
 
 	module.exports = TextureNode;
 
@@ -1262,66 +1318,117 @@
 
 
 /***/ },
-/* 17 */
-/***/ function(module, exports) {
-
-	module.exports = Utils;
-
-	function Utils(){}
-
-	// Utils.arrayIntersect(['a', 'b', 'c'], ['a', 'c']) => ['a', 'c']
-	Utils.arrayIntersect = function(a, b){
-		return a.filter(function (item){
-			return b.indexOf(item) !== -1;
-		});
-	};
-
-	// Utils.getHighestDimensionVectorType(['float', 'vec2', 'vec3']) => 'vec3'
-	Utils.getHighestDimensionVectorType = function(array){
-		return array.sort().reverse()[0];
-	};
-
-	// Utils.numberToGlslFloat(2) => '2.0'
-	Utils.numberToGlslFloat = function(n){
-		return (n+'').indexOf('.') === -1 ? n+'.0' : n+'';
-	};
-
-	var expressionTable = {
-		'float': {
-			'float': 'X',
-			'vec2': 'vec2(X)',
-			'vec3': 'vec3(X)',
-			'vec4': 'vec4(X)'
-		},
-		'vec2': {
-			'float': 'X.x',
-			'vec2': 'X',
-			'vec3': 'vec3(X,0)',
-			'vec4': 'vec4(X,0,0)'
-		},
-		'vec3': {
-			'float': 'X.x',
-			'vec2': 'X.xy',
-			'vec3': 'X',
-			'vec4': 'vec4(X,0)'
-		},
-		'vec4': {
-			'float': 'X.x',
-			'vec2': 'X.xy',
-			'vec3': 'X.xyz',
-			'vec4': 'X'
-		}
-	}
-
-	Utils.convertGlslType = function(expression, type, newType){
-		return expressionTable[type][newType].replace('X', expression);
-	};
-
-/***/ },
 /* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Graph = __webpack_require__(19);
+	var Node = __webpack_require__(1);
+	var Uniform = __webpack_require__(7);
+
+	module.exports = AppendNode;
+
+	// A vector with four components/values.
+	function AppendNode(options){
+		options = options || {};
+		Node.call(this, options);
+	}
+	AppendNode.prototype = Object.create(Node.prototype);
+	AppendNode.prototype.constructor = AppendNode;
+
+	Node.registerClass('append', AppendNode);
+
+	AppendNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
+	AppendNode.prototype.getInputPorts = function(){
+		var sum = this.getComponentSum();
+
+		var a = this.inputPortIsConnected('a');
+		var b = this.inputPortIsConnected('b');
+		var c = this.inputPortIsConnected('c');
+		var d = this.inputPortIsConnected('d');
+
+		if(!a && !b && !c && !d)
+			return ['a'];
+		else if(a && !b && !c && !d && sum < 4)
+			return ['a', 'b'];
+		else if(a && b && !c && !d && sum < 4)
+			return ['a', 'b', 'c'];
+		else if(a && b && c && !d && sum < 4)
+			return ['a', 'b', 'c', 'd'];
+		else 
+			return ['a', 'b', 'c', 'd'];
+	};
+
+	AppendNode.prototype.getOutputPorts = function(){
+		return ['out'];
+	};
+
+	AppendNode.prototype.getInputTypes = function(key){
+		var types;
+		switch(key){
+		case 'a':
+		case 'b':
+		case 'c':
+		case 'd':
+			types = AppendNode.supportedTypes.slice(0/*, 4 - sum*/);
+			break;
+		}
+		return types;
+	};
+
+	AppendNode.prototype.getComponentSum = function(){
+		var ports = 'abcd';
+		var weights = {
+			'float': 1,
+			'vec2': 2,
+			'vec3': 3,
+			'vec4': 4
+		};
+		var sum = 0;
+		for(var i=0; i<ports.length; i++){
+			var x = ports[i];
+			if(this.inputPortIsConnected(x)){
+				var type = this.getInputTypes(x)[0];
+				sum += weights[type];
+			}
+		}
+		return sum;
+	};
+
+	AppendNode.prototype.getOutputTypes = function(key){
+		return key === 'out' ? [AppendNode.supportedTypes[this.getComponentSum() - 1]] : [];
+	};
+
+	AppendNode.prototype.render = function(){
+		var a = this.getInputVariableName('a');
+		var b = this.getInputVariableName('b');
+		var c = this.getInputVariableName('c');
+		var d = this.getInputVariableName('d');
+		var vars = [];
+		if(a) vars.push(a);
+		if(b) vars.push(b);
+		if(c) vars.push(c);
+		if(d) vars.push(d);
+
+		var outVarName = this.getOutputVariableNames('out')[0];
+		var outType = this.getOutputTypes('out')[0];
+
+		if(outVarName){
+			return outVarName + ' = ' + outType + '(' + vars.join(',') + ');';
+		}
+
+		return '';
+	};
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Graph = __webpack_require__(20);
 	var FragColorNode = __webpack_require__(3);
 
 	module.exports = FragmentGraph;
@@ -1334,10 +1441,10 @@
 	FragmentGraph.prototype = Object.create(Graph.prototype);
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toposort = __webpack_require__(20);
+	var toposort = __webpack_require__(21);
 
 	module.exports = Graph;
 
@@ -1557,7 +1664,7 @@
 	};
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports) {
 
 	
@@ -1622,11 +1729,11 @@
 
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var FragmentGraph = __webpack_require__(18);
-	var VertexGraph = __webpack_require__(22);
+	var FragmentGraph = __webpack_require__(19);
+	var VertexGraph = __webpack_require__(23);
 
 	module.exports = GraphShader;
 
@@ -1683,13 +1790,13 @@
 	};
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var PositionNode = __webpack_require__(4);
-	var Graph = __webpack_require__(19);
+	var Graph = __webpack_require__(20);
 	var Uniform = __webpack_require__(7);
-	var Attribute = __webpack_require__(11);
+	var Attribute = __webpack_require__(12);
 
 	module.exports = VertexGraph;
 
@@ -1724,114 +1831,6 @@
 			type: 'vec3'
 		}));
 		return attributes;
-	};
-
-/***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var Uniform = __webpack_require__(7);
-
-	module.exports = AppendNode;
-
-	// A vector with four components/values.
-	function AppendNode(options){
-		options = options || {};
-		Node.call(this, options);
-	}
-	AppendNode.prototype = Object.create(Node.prototype);
-	AppendNode.prototype.constructor = AppendNode;
-
-	Node.registerClass('append', AppendNode);
-
-	AppendNode.supportedTypes = [
-		'float',
-		'vec2',
-		'vec3',
-		'vec4'
-	];
-
-	AppendNode.prototype.getInputPorts = function(){
-		var sum = this.getComponentSum();
-
-		console.log(sum)
-
-		if(!this.inputPortIsConnected('a'))
-			return ['a'];
-
-		else if(!this.inputPortIsConnected('b') && sum < 4)
-			return ['a', 'b'];
-
-		else if(!this.inputPortIsConnected('c') && sum < 4)
-			return ['a', 'b', 'c'];
-
-		else if(!this.inputPortIsConnected('d') && sum < 4)
-			return ['a', 'b', 'c', 'd'];
-	};
-
-	AppendNode.prototype.getOutputPorts = function(){
-		return ['out'];
-	};
-
-	AppendNode.prototype.getInputTypes = function(key){
-		//var sum = this.getComponentSum();
-		var types;
-		switch(key){
-		case 'a':
-		case 'b':
-		case 'c':
-		case 'd':
-			types = AppendNode.supportedTypes.slice(0/*, 4 - sum*/);
-			break;
-		}
-		return types;
-	};
-
-	AppendNode.prototype.getComponentSum = function(){
-		var ports = 'abcd';
-		var weights = {
-			'float': 1,
-			'vec2': 2,
-			'vec3': 3,
-			'vec4': 4
-		};
-		var sum = 0;
-		for(var i=0; i<ports.length; i++){
-			var x = ports[i];
-			if(this.inputPortIsConnected(x)){
-				var type = this.getInputTypes(x)[0];
-				sum += weights[type];
-			}
-		}
-		return sum;
-	};
-
-	AppendNode.prototype.getOutputTypes = function(key){
-		console.log('getOutputTypes')
-		return key === 'out' ? [AppendNode.supportedTypes[this.getComponentSum() - 1]] : [];
-	};
-
-	AppendNode.prototype.render = function(){
-		console.log('render')
-		var a = this.getInputVariableName('a');
-		var b = this.getInputVariableName('b');
-		var c = this.getInputVariableName('c');
-		var d = this.getInputVariableName('d');
-		var vars = [];
-		if(a) vars.push(a);
-		if(b) vars.push(b);
-		if(c) vars.push(c);
-		if(d) vars.push(d);
-
-		var outVarName = this.getOutputVariableNames('out')[0];
-		var outType = this.getOutputTypes()[0];
-
-		if(outVarName){
-			return outVarName + ' = ' + outType + '(' + vars.join(',') + ');';
-		}
-
-		return '';
 	};
 
 /***/ }

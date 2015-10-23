@@ -370,6 +370,7 @@
                 }
 
                 instance.bind("click", function (c) {
+                    console.log('CLICK')
                     if(!ignoreConnectionEvents){
                         var info = getConnectionInfo(c);
                         component.props.disconnect(info.nodeA, info.outputA, info.nodeB, info.inputB);
@@ -420,51 +421,82 @@
             }
           });
 
+        var Port = React.createClass({
+            componentDidMount: function(){
+                var el = ReactDOM.findDOMNode(this);
+                var instance = this.props.instance;
+
+                instance.makeSource(el, {
+                    anchor: "Continuous",
+                    connectorStyle: {
+                        strokeStyle: "black",
+                        lineWidth: 2,
+                        outlineColor: "transparent",
+                        outlineWidth: 4
+                    },
+                    maxConnections: 1,
+                    connectionType:"basic",
+                    onMaxConnections: function (info, e) {
+                        console.error("Maximum connections (" + info.maxConnections + ") reached");
+                    },
+                    extract:{
+                        "action": "the-action"
+                    }
+                });
+
+                instance.makeTarget(el, {
+                    dropOptions: { hoverClass: "dragHover" },
+                    anchor: "Continuous",
+                    allowLoopback: false
+                });
+            },
+            componentWillUnmount: function(){
+                var el = ReactDOM.findDOMNode(this);
+                var instance = this.props.instance;
+
+                instance.unmakeSource(el);
+                instance.makeTarget(el);
+            },
+            render: function(){
+                return (
+                    <div className={this.props.type} key={this.props.portKey} id={this.props.portKey + this.props.id}>{this.props.portKey}</div>
+                );
+            }
+        });
+
           var Node = React.createClass({
             componentDidMount: function(){
                 var el = ReactDOM.findDOMNode(this);
                 var instance = this.props.instance;
                 instance.draggable(el);
-                var eps = el.querySelectorAll('.out, .in');
-                for(var i=0; i<eps.length; i++){
-                    var ep = eps[i];
-
-                    instance.makeSource(ep, {
-                        anchor: "Continuous",
-                        connectorStyle: {
-                            strokeStyle: "black",
-                            lineWidth: 2,
-                            outlineColor: "transparent",
-                            outlineWidth: 4
-                        },
-                        maxConnections: 1,
-                        connectionType:"basic",
-                        onMaxConnections: function (info, e) {
-                            console.error("Maximum connections (" + info.maxConnections + ") reached");
-                        },
-                        extract:{
-                            "action": "the-action"
-                        }
-                    });
-
-                    instance.makeTarget(ep, {
-                        dropOptions: { hoverClass: "dragHover" },
-                        anchor: "Continuous",
-                        allowLoopback: false
-                    });
-                }
             },
             render: function() {
                 var shader = this.props.updateShader();
                 var node = shader.fragmentGraph.getNodeById(this.props.data.id);
                 var inputs = node ? node.getInputPorts().map(function(key){
+                    // return (
+                    //     <div className="in" key={key} id={key + this.props.data.id}>{key}</div>
+                    // );
                     return (
-                        <div className="in" key={key} id={key + this.props.data.id}>{key}</div>
+                        <Port
+                            type={"in"}
+                            id={this.props.data.id}
+                            instance={this.props.instance}
+                            key={key}
+                            portKey={key} />
                     );
                 }, this) : undefined;
                 var outputs = node ? node.getOutputPorts().map(function(key){
+                    // return (
+                    //     <div className="out" key={key} id={key + this.props.data.id}>{key}</div>
+                    // );
                     return (
-                        <div className="out" key={key} id={key + this.props.data.id}>{key}</div>
+                        <Port
+                            type={"out"}
+                            id={this.props.data.id}
+                            key={key}
+                            instance={this.props.instance}
+                            portKey={key} />
                     );
                 }, this) : undefined;
 

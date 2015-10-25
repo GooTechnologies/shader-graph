@@ -55,6 +55,7 @@
 		ClampNode: __webpack_require__(48),
 		Connection: __webpack_require__(2),
 		ComponentMaskNode: __webpack_require__(52),
+		CosNode: __webpack_require__(55),
 		DistanceNode: __webpack_require__(53),
 		DivideNode: __webpack_require__(22),
 		FloorNode: __webpack_require__(28),
@@ -66,6 +67,7 @@
 		IfNode: __webpack_require__(46),
 		LogNode: __webpack_require__(31),
 		MathFunctionNode: __webpack_require__(25),
+		Matrix4Node: __webpack_require__(56),
 		MaxNode: __webpack_require__(34),
 		MinNode: __webpack_require__(33),
 		MixNode: __webpack_require__(50),
@@ -77,6 +79,7 @@
 		OperatorNode: __webpack_require__(20),
 		PositionNode: __webpack_require__(4),
 		PowNode: __webpack_require__(37),
+		RelayNode: __webpack_require__(57),
 		ReciprocalNode: __webpack_require__(19),
 		RoundNode: __webpack_require__(30),
 		SignNode: __webpack_require__(35),
@@ -3028,6 +3031,116 @@
 		} else {
 			return '';
 		}
+	};
+
+
+/***/ },
+/* 55 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = CosNode;
+
+	function CosNode(options){
+		options = options || {};
+		options.functionName = 'cos';
+		MathFunctionNode.call(this, options);
+	}
+	CosNode.prototype = Object.create(MathFunctionNode.prototype);
+	CosNode.prototype.constructor = CosNode;
+
+	Node.registerClass('cos', CosNode);
+
+/***/ },
+/* 56 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+
+	module.exports = Matrix4Node;
+
+	// A vector with four components/values.
+	function Matrix4Node(options){
+		options = options || {};
+		Node.call(this, options);
+		this.value = options.value ? options.value.slice(0) : [1,0,0,0,  0,1,0,0,  0,0,1,0,  0,0,0,1];
+	}
+	Matrix4Node.prototype = Object.create(Node.prototype);
+	Matrix4Node.prototype.constructor = Matrix4Node;
+
+	Node.registerClass('mat4', Matrix4Node);
+
+	Matrix4Node.prototype.getInputPorts = function(){
+		return [];
+	};
+
+	Matrix4Node.prototype.getOutputPorts = function(){
+		return ['value'];
+	};
+
+	Matrix4Node.prototype.getOutputTypes = function(key){
+		return key === 'value' ? ['mat4'] : [];
+	};
+
+	Matrix4Node.prototype.render = function(){
+		var outVarName = this.getOutputVariableNames('value')[0];
+		return outVarName ? outVarName + ' = mat4(' + this.value.join(',') + ');' : '';
+	};
+
+
+/***/ },
+/* 57 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+
+	module.exports = RelayNode;
+
+	// A vector with four components/values.
+	function RelayNode(options){
+		options = options || {};
+		Node.call(this, options);
+	}
+	RelayNode.prototype = Object.create(Node.prototype);
+	RelayNode.prototype.constructor = RelayNode;
+
+	RelayNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
+	Node.registerClass('relay', RelayNode);
+
+	RelayNode.prototype.getInputPorts = function(){
+		return ['in'];
+	};
+
+	RelayNode.prototype.getOutputPorts = function(){
+		return ['out'];
+	};
+
+	// Output type is same as what we get in.
+	RelayNode.prototype.getOutputTypes = function(key){
+		var types = [];
+		if(key === 'out'){
+			types = this.inputPortIsConnected('in') ? this.getInputVariableTypes('in') : ['float'];
+		}
+		return types;
+	};
+
+	RelayNode.prototype.getInputTypes = function(key){
+		return key === 'in' ? RelayNode.supportedTypes : [];
+	};
+
+
+	RelayNode.prototype.render = function(){
+		var outVarName = this.getOutputVariableNames('out')[0];
+		var inVarName = this.getInputVariableName('in');
+		return outVarName ? outVarName + ' = ' + inVarName + ';' : '';
 	};
 
 

@@ -46,43 +46,57 @@
 
 	module.exports = {
 
-		Node: __webpack_require__(1),
+		AbsNode: __webpack_require__(27),
+		AddNode: __webpack_require__(21),
+		AppendNode: __webpack_require__(18),
+		Attribute: __webpack_require__(14),
+		CeilNode: __webpack_require__(29),
+		Clamp01Node: __webpack_require__(49),
+		ClampNode: __webpack_require__(48),
+		Connection: __webpack_require__(2),
+		ComponentMaskNode: __webpack_require__(52),
+		DistanceNode: __webpack_require__(53),
+		DivideNode: __webpack_require__(22),
+		FloorNode: __webpack_require__(28),
+		FracNode: __webpack_require__(45),
 		FragColorNode: __webpack_require__(3),
+		FragmentGraph: __webpack_require__(38),
+		Graph: __webpack_require__(39),
+		GraphShader: __webpack_require__(41),
+		IfNode: __webpack_require__(46),
+		LogNode: __webpack_require__(31),
+		MathFunctionNode: __webpack_require__(25),
+		MaxNode: __webpack_require__(34),
+		MinNode: __webpack_require__(33),
+		MixNode: __webpack_require__(50),
+		ModNode: __webpack_require__(47),
+		MultiplyNode: __webpack_require__(24),
+		Node: __webpack_require__(1),
+		NormalizeNode: __webpack_require__(51),
+		OperatorNode: __webpack_require__(20),
 		PositionNode: __webpack_require__(4),
+		PowNode: __webpack_require__(37),
+		ReciprocalNode: __webpack_require__(19),
+		RoundNode: __webpack_require__(30),
+		SignNode: __webpack_require__(35),
+		SineNode: __webpack_require__(26),
+		SmoothStepNode: __webpack_require__(44),
+		SqrtNode: __webpack_require__(32),
+		StepNode: __webpack_require__(43),
+		SubtractNode: __webpack_require__(23),
+		TextureNode: __webpack_require__(17),
+		TimeNode: __webpack_require__(16),
+		TruncNode: __webpack_require__(36),
 		UberFragNode: __webpack_require__(5),
 		UberVertNode: __webpack_require__(6),
-		Vector2Node: __webpack_require__(24),
-		Vector3Node: __webpack_require__(25),
-		Vector4Node: __webpack_require__(8),
-		ValueNode: __webpack_require__(9),
-		UVNode: __webpack_require__(11),
-		TimeNode: __webpack_require__(14),
-		TextureNode: __webpack_require__(17),
-		AppendNode: __webpack_require__(18),
-		ReciprocalNode: __webpack_require__(34),
-
-		OperatorNode: __webpack_require__(30),
-		AddNode: __webpack_require__(31),
-		DivideNode: __webpack_require__(33),
-		SubtractNode: __webpack_require__(32),
-		MultiplyNode: __webpack_require__(16),
-
-		MathFunctionNode: __webpack_require__(26),
-		SineNode: __webpack_require__(15),
-		AbsNode: __webpack_require__(27),
-		FloorNode: __webpack_require__(28),
-		CeilNode: __webpack_require__(29),
-
-		PowNode: __webpack_require__(35),
-
-		Utils: __webpack_require__(10),
-		Attribute: __webpack_require__(12),
-		Connection: __webpack_require__(2),
-		FragmentGraph: __webpack_require__(19),
-		Graph: __webpack_require__(20),
-		GraphShader: __webpack_require__(22),
 		Uniform: __webpack_require__(7),
-		Varying: __webpack_require__(13)
+		Utils: __webpack_require__(12),
+		UVNode: __webpack_require__(13),
+		ValueNode: __webpack_require__(11),
+		Varying: __webpack_require__(15),
+		Vector2Node: __webpack_require__(8),
+		Vector3Node: __webpack_require__(9),
+		Vector4Node: __webpack_require__(10),
 
 	};
 
@@ -152,6 +166,12 @@
 
 	Node.prototype.inputPortIsConnected = function(key){
 		return this.graph.inputPortIsConnected(this, key);
+	};
+
+	Node.prototype.anyInputPortIsConnected = function(){
+		return this.getInputPorts().some(function(key){
+			return this.graph.inputPortIsConnected(this, key);
+		}, this);
 	};
 
 	Node.prototype.getOutputVariableNames = function(key){
@@ -817,6 +837,78 @@
 
 	var Node = __webpack_require__(1);
 
+	module.exports = Vector2Node;
+
+	function Vector2Node(options){
+		options = options || {};
+		Node.call(this, options);
+		this.value = options.value ? options.value.slice(0) : [0,0];
+	}
+	Vector2Node.prototype = Object.create(Node.prototype);
+	Vector2Node.prototype.constructor = Vector2Node;
+
+	Node.registerClass('vec2', Vector2Node);
+
+	Vector2Node.prototype.getInputPorts = function(){
+		return [];
+	};
+
+	Vector2Node.prototype.getOutputPorts = function(){
+		return ['rg'];
+	};
+
+	Vector2Node.prototype.getOutputTypes = function(key){
+		return key === 'rg' ? ['vec2'] : [];
+	};
+
+	Vector2Node.prototype.render = function(){
+		var outVarName = this.getOutputVariableNames('rg')[0];
+		return outVarName ? outVarName + ' = vec2(' + this.value.join(',') + ');' : '';
+	};
+
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+
+	module.exports = Vector3Node;
+
+	function Vector3Node(options){
+		options = options || {};
+		Node.call(this, options);
+		this.value = options.value ? options.value.slice(0) : [0,0,0];
+	}
+	Vector3Node.prototype = Object.create(Node.prototype);
+	Vector3Node.prototype.constructor = Vector3Node;
+
+	Node.registerClass('vec3', Vector3Node);
+
+	Vector3Node.prototype.getInputPorts = function(){
+		return [];
+	};
+
+	Vector3Node.prototype.getOutputPorts = function(){
+		return ['rgb'];
+	};
+
+	Vector3Node.prototype.getOutputTypes = function(key){
+		return key === 'rgb' ? ['vec3'] : [];
+	};
+
+	Vector3Node.prototype.render = function(){
+		var outVarName = this.getOutputVariableNames('rgb')[0];
+		return outVarName ? outVarName + ' = vec3(' + this.value.join(',') + ');' : '';
+	};
+
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+
 	module.exports = Vector4Node;
 
 	// A vector with four components/values.
@@ -849,11 +941,11 @@
 
 
 /***/ },
-/* 9 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
-	var Utils = __webpack_require__(10);
+	var Utils = __webpack_require__(12);
 
 	module.exports = ValueNode;
 
@@ -883,7 +975,7 @@
 
 
 /***/ },
-/* 10 */
+/* 12 */
 /***/ function(module, exports) {
 
 	module.exports = Utils;
@@ -939,13 +1031,13 @@
 	};
 
 /***/ },
-/* 11 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
 	var Uniform = __webpack_require__(7);
-	var Attribute = __webpack_require__(12);
-	var Varying = __webpack_require__(13);
+	var Attribute = __webpack_require__(14);
+	var Varying = __webpack_require__(15);
 
 	module.exports = UVNode;
 
@@ -1024,7 +1116,7 @@
 
 
 /***/ },
-/* 12 */
+/* 14 */
 /***/ function(module, exports) {
 
 	module.exports = Attribute;
@@ -1038,7 +1130,7 @@
 	}
 
 /***/ },
-/* 13 */
+/* 15 */
 /***/ function(module, exports) {
 
 	module.exports = Varying;
@@ -1053,7 +1145,7 @@
 	}
 
 /***/ },
-/* 14 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
@@ -1101,51 +1193,13 @@
 
 
 /***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var MathFunctionNode = __webpack_require__(26);
-
-	module.exports = SineNode;
-
-	function SineNode(options){
-		options = options || {};
-		options.functionName = 'sin';
-		MathFunctionNode.call(this, options);
-	}
-	SineNode.prototype = Object.create(MathFunctionNode.prototype);
-	SineNode.prototype.constructor = SineNode;
-
-	Node.registerClass('sine', SineNode);
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var OperatorNode = __webpack_require__(30);
-	var Utils = __webpack_require__(10);
-
-	module.exports = MultiplyNode;
-
-	function MultiplyNode(options){
-		options = options || {};
-		OperatorNode.call(this, options);
-	}
-	MultiplyNode.prototype = Object.create(OperatorNode.prototype);
-	MultiplyNode.prototype.constructor = MultiplyNode;
-
-	Node.registerClass('multiply', MultiplyNode);
-
-/***/ },
 /* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
 	var Uniform = __webpack_require__(7);
-	var Attribute = __webpack_require__(12);
-	var Varying = __webpack_require__(13);
+	var Attribute = __webpack_require__(14);
+	var Varying = __webpack_require__(15);
 
 	module.exports = TextureNode;
 
@@ -1321,7 +1375,575 @@
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Graph = __webpack_require__(20);
+	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(12);
+
+	module.exports = ReciprocalNode;
+
+	function ReciprocalNode(options){
+		options = options || {};
+		Node.call(this, options);
+	}
+	ReciprocalNode.prototype = Object.create(Node.prototype);
+	ReciprocalNode.prototype.constructor = ReciprocalNode;
+
+	Node.registerClass('reciprocal', ReciprocalNode);
+
+	ReciprocalNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
+	ReciprocalNode.prototype.getInputPorts = function(key){
+		return ['x'];
+	};
+
+	ReciprocalNode.prototype.getOutputPorts = function(key){
+		return ['y'];
+	};
+
+	// Output type is same as what we get in.
+	ReciprocalNode.prototype.getOutputTypes = function(key){
+		var types = [];
+		if(key === 'y'){
+			types = this.inputPortIsConnected('x') ? this.getInputVariableTypes('x') : ['float'];
+		}
+		return types;
+	};
+
+	ReciprocalNode.prototype.getInputTypes = function(key){
+		return key === 'x' ? ReciprocalNode.supportedTypes : [];
+	};
+
+	ReciprocalNode.prototype.render = function(){
+		var outVarName = this.getOutputVariableNames('y')[0];
+		var outVarType = this.getOutputTypes('y')[0];
+
+		var inVarName = this.getInputVariableName('x');
+		var inVarType = this.getInputVariableTypes('x')[0];
+
+		if(outVarName && inVarName){
+			return outVarName + ' = ' + inVarType + '(1) / (' + Utils.convertGlslType(inVarName, inVarType, outVarType) + ');';
+		} else if(outVarName){
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outVarType) + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(12);
+
+	module.exports = OperatorNode;
+
+	function OperatorNode(options){
+		options = options || {};
+		this.operator = options.operator || '*';
+		Node.call(this, options);
+	}
+	OperatorNode.prototype = Object.create(Node.prototype);
+	OperatorNode.prototype.constructor = OperatorNode;
+
+	OperatorNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
+	OperatorNode.prototype.getInputPorts = function(key){
+		return ['a', 'b'];
+	};
+
+	OperatorNode.prototype.getOutputPorts = function(key){
+		return ['out'];
+	};
+
+	OperatorNode.prototype.getOutputTypes = function(key){
+		var types = [];
+		if(key === 'out'){
+			if(this.inputPortIsConnected('a') || this.inputPortIsConnected('b')){
+				// Something is connected to the input - choose the vector type of largest dimension
+				types = [
+					Utils.getHighestDimensionVectorType(
+						this.getInputVariableTypes('a').concat(this.getInputVariableTypes('b'))
+					)
+				];
+			} else {
+				// Nothing connected - use default float type
+				types = ['float'];
+			}
+		}
+		return types;
+	};
+
+	OperatorNode.prototype.getInputTypes = function(key){
+		return (key === 'a' || key === 'b') ? OperatorNode.supportedTypes : [];
+	};
+
+	OperatorNode.prototype.render = function(){
+		var inVarNameA = this.getInputVariableName('a');
+		var inVarTypeA = this.getInputVariableTypes('a')[0];
+
+		var inVarNameB = this.getInputVariableName('b');
+		var inVarTypeB = this.getInputVariableTypes('b')[0];
+
+		var outVarName = this.getOutputVariableNames('out')[0];
+		var outVarType = this.getOutputTypes('out')[0];
+
+		if(inVarNameA && inVarNameB && outVarName){
+			return outVarName + ' = ' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + this.operator + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType) + ';';
+		} else if(outVarName){
+			var outType = this.getOutputTypes('out')[0];
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outType) + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var OperatorNode = __webpack_require__(20);
+	var Utils = __webpack_require__(12);
+
+	module.exports = AddNode;
+
+	function AddNode(options){
+		options = options || {};
+		OperatorNode.call(this, options);
+	}
+	AddNode.prototype = Object.create(OperatorNode.prototype);
+	AddNode.prototype.constructor = AddNode;
+
+	Node.registerClass('add', AddNode);
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var OperatorNode = __webpack_require__(20);
+	var Utils = __webpack_require__(12);
+
+	module.exports = DivideNode;
+
+	function DivideNode(options){
+		options = options || {};
+		OperatorNode.call(this, options);
+	}
+	DivideNode.prototype = Object.create(OperatorNode.prototype);
+	DivideNode.prototype.constructor = DivideNode;
+
+	Node.registerClass('divide', DivideNode);
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var OperatorNode = __webpack_require__(20);
+	var Utils = __webpack_require__(12);
+
+	module.exports = SubtractNode;
+
+	function SubtractNode(options){
+		options = options || {};
+		OperatorNode.call(this, options);
+	}
+	SubtractNode.prototype = Object.create(OperatorNode.prototype);
+	SubtractNode.prototype.constructor = SubtractNode;
+
+	Node.registerClass('subtract', SubtractNode);
+
+/***/ },
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var OperatorNode = __webpack_require__(20);
+	var Utils = __webpack_require__(12);
+
+	module.exports = MultiplyNode;
+
+	function MultiplyNode(options){
+		options = options || {};
+		OperatorNode.call(this, options);
+	}
+	MultiplyNode.prototype = Object.create(OperatorNode.prototype);
+	MultiplyNode.prototype.constructor = MultiplyNode;
+
+	Node.registerClass('multiply', MultiplyNode);
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(12);
+
+	module.exports = MathFunctionNode;
+
+	function MathFunctionNode(options){
+		options = options || {};
+		this.functionName = options.functionName || 'f';
+		Node.call(this, options);
+	}
+	MathFunctionNode.prototype = Object.create(Node.prototype);
+	MathFunctionNode.prototype.constructor = MathFunctionNode;
+
+	MathFunctionNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
+	MathFunctionNode.prototype.getInputPorts = function(key){
+		return ['x'];
+	};
+
+	MathFunctionNode.prototype.getOutputPorts = function(key){
+		return ['y'];
+	};
+
+	// Output type is same as what we get in.
+	MathFunctionNode.prototype.getOutputTypes = function(key){
+		var types = [];
+		if(key === 'y'){
+			types = this.inputPortIsConnected('x') ? this.getInputVariableTypes('x') : ['float'];
+		}
+		return types;
+	};
+
+	MathFunctionNode.prototype.getInputTypes = function(key){
+		return key === 'x' ? MathFunctionNode.supportedTypes : [];
+	};
+
+	MathFunctionNode.prototype.render = function(){
+		var outVarName = this.getOutputVariableNames('y')[0];
+		var outVarType = this.getOutputTypes('y')[0];
+
+		var inVarName = this.getInputVariableName('x');
+		var inVarType = this.getInputVariableTypes('x')[0];
+
+		if(outVarName && inVarName){
+			return outVarName + ' = ' + this.functionName + '(' + Utils.convertGlslType(inVarName, inVarType, outVarType) + ');';
+		} else if(outVarName){
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outVarType) + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = SineNode;
+
+	function SineNode(options){
+		options = options || {};
+		options.functionName = 'sin';
+		MathFunctionNode.call(this, options);
+	}
+	SineNode.prototype = Object.create(MathFunctionNode.prototype);
+	SineNode.prototype.constructor = SineNode;
+
+	Node.registerClass('sine', SineNode);
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = AbsNode;
+
+	function AbsNode(options){
+		options = options || {};
+		options.functionName = 'abs';
+		MathFunctionNode.call(this, options);
+	}
+	AbsNode.prototype = Object.create(MathFunctionNode.prototype);
+	AbsNode.prototype.constructor = AbsNode;
+
+	Node.registerClass('abs', AbsNode);
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = FloorNode;
+
+	function FloorNode(options){
+		options = options || {};
+		options.functionName = 'floor';
+		MathFunctionNode.call(this, options);
+	}
+	FloorNode.prototype = Object.create(MathFunctionNode.prototype);
+	FloorNode.prototype.constructor = FloorNode;
+
+	Node.registerClass('floor', FloorNode);
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = CeilNode;
+
+	function CeilNode(options){
+		options = options || {};
+		options.functionName = 'ceil';
+		MathFunctionNode.call(this, options);
+	}
+	CeilNode.prototype = Object.create(MathFunctionNode.prototype);
+	CeilNode.prototype.constructor = CeilNode;
+
+	Node.registerClass('floor', CeilNode);
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = RoundNode;
+
+	function RoundNode(options){
+		options = options || {};
+		options.functionName = 'round';
+		MathFunctionNode.call(this, options);
+	}
+	RoundNode.prototype = Object.create(MathFunctionNode.prototype);
+	RoundNode.prototype.constructor = RoundNode;
+
+	Node.registerClass('round', RoundNode);
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = LogNode;
+
+	function LogNode(options){
+		options = options || {};
+		options.functionName = 'log';
+		MathFunctionNode.call(this, options);
+	}
+	LogNode.prototype = Object.create(MathFunctionNode.prototype);
+	LogNode.prototype.constructor = LogNode;
+
+	Node.registerClass('log', LogNode);
+
+	LogNode.BASE_E = 'log';
+	LogNode.BASE_2 = 'log2';
+
+	LogNode.prototype.setBase = function(base){
+		this.functionName = base;
+	};
+
+/***/ },
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = SqrtNode;
+
+	function SqrtNode(options){
+		options = options || {};
+		options.functionName = 'sqrt';
+		MathFunctionNode.call(this, options);
+	}
+	SqrtNode.prototype = Object.create(MathFunctionNode.prototype);
+	SqrtNode.prototype.constructor = SqrtNode;
+
+	Node.registerClass('sqrt', SqrtNode);
+
+/***/ },
+/* 33 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = MinNode;
+
+	function MinNode(options){
+		options = options || {};
+		options.functionName = 'min';
+		MathFunctionNode.call(this, options);
+	}
+	MinNode.prototype = Object.create(MathFunctionNode.prototype);
+	MinNode.prototype.constructor = MinNode;
+
+	Node.registerClass('min', MinNode);
+
+/***/ },
+/* 34 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = MaxNode;
+
+	function MaxNode(options){
+		options = options || {};
+		options.functionName = 'max';
+		MathFunctionNode.call(this, options);
+	}
+	MaxNode.prototype = Object.create(MathFunctionNode.prototype);
+	MaxNode.prototype.constructor = MaxNode;
+
+	Node.registerClass('max', MaxNode);
+
+/***/ },
+/* 35 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = SignNode;
+
+	function SignNode(options){
+		options = options || {};
+		options.functionName = 'sign';
+		MathFunctionNode.call(this, options);
+	}
+	SignNode.prototype = Object.create(MathFunctionNode.prototype);
+	SignNode.prototype.constructor = SignNode;
+
+	Node.registerClass('sign', SignNode);
+
+/***/ },
+/* 36 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = TruncNode;
+
+	function TruncNode(options){
+		options = options || {};
+		options.functionName = 'trunc';
+		MathFunctionNode.call(this, options);
+	}
+	TruncNode.prototype = Object.create(MathFunctionNode.prototype);
+	TruncNode.prototype.constructor = TruncNode;
+
+	Node.registerClass('trunc', TruncNode);
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(12);
+
+	module.exports = PowNode;
+
+	function PowNode(options){
+		options = options || {};
+		Node.call(this, options);
+	}
+	PowNode.prototype = Object.create(Node.prototype);
+	PowNode.prototype.constructor = PowNode;
+
+	Node.registerClass('pow', PowNode);
+
+	PowNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
+	PowNode.prototype.getInputPorts = function(key){
+		return ['val', 'exp'];
+	};
+
+	PowNode.prototype.getOutputPorts = function(key){
+		return ['out'];
+	};
+
+	PowNode.prototype.getOutputTypes = function(key){
+		var types = [];
+		if(key === 'out'){
+			if(this.inputPortIsConnected('val') || this.inputPortIsConnected('exp')){
+				// Something is connected to the input - choose the vector type of largest dimension
+				types = [
+					Utils.getHighestDimensionVectorType(
+						this.getInputVariableTypes('val').concat(this.getInputVariableTypes('exp'))
+					)
+				];
+			} else {
+				// Nothing connected - use default float type
+				types = ['float'];
+			}
+		}
+		return types;
+	};
+
+	PowNode.prototype.getInputTypes = function(key){
+		return (key === 'val' || key === 'exp') ? PowNode.supportedTypes : [];
+	};
+
+	PowNode.prototype.render = function(){
+		var inVarNameA = this.getInputVariableName('val');
+		var inVarTypeA = this.getInputVariableTypes('val')[0];
+
+		var inVarNameB = this.getInputVariableName('exp');
+		var inVarTypeB = this.getInputVariableTypes('exp')[0];
+
+		var outVarName = this.getOutputVariableNames('out')[0];
+		var outVarType = this.getOutputTypes('out')[0];
+
+		if(inVarNameA && inVarNameB && outVarName){
+			return outVarName + ' = pow(' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + ',' + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType) + ');';
+		} else if(outVarName){
+			var outType = this.getOutputTypes('out')[0];
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outType) + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 38 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Graph = __webpack_require__(39);
 	var FragColorNode = __webpack_require__(3);
 
 	module.exports = FragmentGraph;
@@ -1334,10 +1956,10 @@
 	FragmentGraph.prototype = Object.create(Graph.prototype);
 
 /***/ },
-/* 20 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toposort = __webpack_require__(21);
+	var toposort = __webpack_require__(40);
 
 	module.exports = Graph;
 
@@ -1557,7 +2179,7 @@
 	};
 
 /***/ },
-/* 21 */
+/* 40 */
 /***/ function(module, exports) {
 
 	
@@ -1622,11 +2244,11 @@
 
 
 /***/ },
-/* 22 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var FragmentGraph = __webpack_require__(19);
-	var VertexGraph = __webpack_require__(23);
+	var FragmentGraph = __webpack_require__(38);
+	var VertexGraph = __webpack_require__(42);
 
 	module.exports = GraphShader;
 
@@ -1683,13 +2305,13 @@
 	};
 
 /***/ },
-/* 23 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var PositionNode = __webpack_require__(4);
-	var Graph = __webpack_require__(20);
+	var Graph = __webpack_require__(39);
 	var Uniform = __webpack_require__(7);
-	var Attribute = __webpack_require__(12);
+	var Attribute = __webpack_require__(14);
 
 	module.exports = VertexGraph;
 
@@ -1727,229 +2349,39 @@
 	};
 
 /***/ },
-/* 24 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(12);
 
-	module.exports = Vector2Node;
+	module.exports = StepNode;
 
-	function Vector2Node(options){
+	function StepNode(options){
 		options = options || {};
 		Node.call(this, options);
-		this.value = options.value ? options.value.slice(0) : [0,0];
 	}
-	Vector2Node.prototype = Object.create(Node.prototype);
-	Vector2Node.prototype.constructor = Vector2Node;
+	StepNode.prototype = Object.create(Node.prototype);
+	StepNode.prototype.constructor = StepNode;
 
-	Node.registerClass('vec2', Vector2Node);
+	Node.registerClass('step', StepNode);
 
-	Vector2Node.prototype.getInputPorts = function(){
-		return [];
-	};
-
-	Vector2Node.prototype.getOutputPorts = function(){
-		return ['rg'];
-	};
-
-	Vector2Node.prototype.getOutputTypes = function(key){
-		return key === 'rg' ? ['vec2'] : [];
-	};
-
-	Vector2Node.prototype.render = function(){
-		var outVarName = this.getOutputVariableNames('rg')[0];
-		return outVarName ? outVarName + ' = vec2(' + this.value.join(',') + ');' : '';
-	};
-
-
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-
-	module.exports = Vector3Node;
-
-	function Vector3Node(options){
-		options = options || {};
-		Node.call(this, options);
-		this.value = options.value ? options.value.slice(0) : [0,0,0];
-	}
-	Vector3Node.prototype = Object.create(Node.prototype);
-	Vector3Node.prototype.constructor = Vector3Node;
-
-	Node.registerClass('vec3', Vector3Node);
-
-	Vector3Node.prototype.getInputPorts = function(){
-		return [];
-	};
-
-	Vector3Node.prototype.getOutputPorts = function(){
-		return ['rgb'];
-	};
-
-	Vector3Node.prototype.getOutputTypes = function(key){
-		return key === 'rgb' ? ['vec3'] : [];
-	};
-
-	Vector3Node.prototype.render = function(){
-		var outVarName = this.getOutputVariableNames('rgb')[0];
-		return outVarName ? outVarName + ' = vec3(' + this.value.join(',') + ');' : '';
-	};
-
-
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var Utils = __webpack_require__(10);
-
-	module.exports = MathFunctionNode;
-
-	function MathFunctionNode(options){
-		options = options || {};
-		this.functionName = options.functionName || 'f';
-		Node.call(this, options);
-	}
-	MathFunctionNode.prototype = Object.create(Node.prototype);
-	MathFunctionNode.prototype.constructor = MathFunctionNode;
-
-	MathFunctionNode.supportedTypes = [
+	StepNode.supportedTypes = [
 		'float',
 		'vec2',
 		'vec3',
 		'vec4'
 	];
 
-	MathFunctionNode.prototype.getInputPorts = function(key){
-		return ['x'];
-	};
-
-	MathFunctionNode.prototype.getOutputPorts = function(key){
-		return ['y'];
-	};
-
-	// Output type is same as what we get in.
-	MathFunctionNode.prototype.getOutputTypes = function(key){
-		var types = [];
-		if(key === 'y'){
-			types = this.inputPortIsConnected('x') ? this.getInputVariableTypes('x') : ['float'];
-		}
-		return types;
-	};
-
-	MathFunctionNode.prototype.getInputTypes = function(key){
-		return key === 'x' ? MathFunctionNode.supportedTypes : [];
-	};
-
-	MathFunctionNode.prototype.render = function(){
-		var outVarName = this.getOutputVariableNames('y')[0];
-		var outVarType = this.getOutputTypes('y')[0];
-
-		var inVarName = this.getInputVariableName('x');
-		var inVarType = this.getInputVariableTypes('x')[0];
-
-		if(outVarName && inVarName){
-			return outVarName + ' = ' + this.functionName + '(' + Utils.convertGlslType(inVarName, inVarType, outVarType) + ');';
-		} else if(outVarName){
-			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outVarType) + ';';
-		} else {
-			return '';
-		}
-	};
-
-
-/***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var MathFunctionNode = __webpack_require__(26);
-
-	module.exports = AbsNode;
-
-	function AbsNode(options){
-		options = options || {};
-		options.functionName = 'abs';
-		MathFunctionNode.call(this, options);
-	}
-	AbsNode.prototype = Object.create(MathFunctionNode.prototype);
-	AbsNode.prototype.constructor = AbsNode;
-
-	Node.registerClass('abs', AbsNode);
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var MathFunctionNode = __webpack_require__(26);
-
-	module.exports = FloorNode;
-
-	function FloorNode(options){
-		options = options || {};
-		options.functionName = 'floor';
-		MathFunctionNode.call(this, options);
-	}
-	FloorNode.prototype = Object.create(MathFunctionNode.prototype);
-	FloorNode.prototype.constructor = FloorNode;
-
-	Node.registerClass('floor', FloorNode);
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var MathFunctionNode = __webpack_require__(26);
-
-	module.exports = CeilNode;
-
-	function CeilNode(options){
-		options = options || {};
-		options.functionName = 'ceil';
-		MathFunctionNode.call(this, options);
-	}
-	CeilNode.prototype = Object.create(MathFunctionNode.prototype);
-	CeilNode.prototype.constructor = CeilNode;
-
-	Node.registerClass('floor', CeilNode);
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var Utils = __webpack_require__(10);
-
-	module.exports = OperatorNode;
-
-	function OperatorNode(options){
-		options = options || {};
-		this.operator = options.operator || '*';
-		Node.call(this, options);
-	}
-	OperatorNode.prototype = Object.create(Node.prototype);
-	OperatorNode.prototype.constructor = OperatorNode;
-
-	OperatorNode.supportedTypes = [
-		'float',
-		'vec2',
-		'vec3',
-		'vec4'
-	];
-
-	OperatorNode.prototype.getInputPorts = function(key){
+	StepNode.prototype.getInputPorts = function(key){
 		return ['a', 'b'];
 	};
 
-	OperatorNode.prototype.getOutputPorts = function(key){
+	StepNode.prototype.getOutputPorts = function(key){
 		return ['out'];
 	};
 
-	OperatorNode.prototype.getOutputTypes = function(key){
+	StepNode.prototype.getOutputTypes = function(key){
 		var types = [];
 		if(key === 'out'){
 			if(this.inputPortIsConnected('a') || this.inputPortIsConnected('b')){
@@ -1967,11 +2399,11 @@
 		return types;
 	};
 
-	OperatorNode.prototype.getInputTypes = function(key){
-		return (key === 'a' || key === 'b') ? OperatorNode.supportedTypes : [];
+	StepNode.prototype.getInputTypes = function(key){
+		return (key === 'a' || key === 'b') ? StepNode.supportedTypes : [];
 	};
 
-	OperatorNode.prototype.render = function(){
+	StepNode.prototype.render = function(){
 		var inVarNameA = this.getInputVariableName('a');
 		var inVarTypeA = this.getInputVariableTypes('a')[0];
 
@@ -1982,7 +2414,7 @@
 		var outVarType = this.getOutputTypes('out')[0];
 
 		if(inVarNameA && inVarNameB && outVarName){
-			return outVarName + ' = ' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + this.operator + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType) + ';';
+			return outVarName + ' = step(' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + ',' + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType) + ');';
 		} else if(outVarName){
 			var outType = this.getOutputTypes('out')[0];
 			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outType) + ';';
@@ -1993,166 +2425,46 @@
 
 
 /***/ },
-/* 31 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Node = __webpack_require__(1);
-	var OperatorNode = __webpack_require__(30);
-	var Utils = __webpack_require__(10);
+	var Utils = __webpack_require__(12);
 
-	module.exports = AddNode;
+	module.exports = SmoothStepNode;
 
-	function AddNode(options){
-		options = options || {};
-		OperatorNode.call(this, options);
-	}
-	AddNode.prototype = Object.create(OperatorNode.prototype);
-	AddNode.prototype.constructor = AddNode;
-
-	Node.registerClass('add', AddNode);
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var OperatorNode = __webpack_require__(30);
-	var Utils = __webpack_require__(10);
-
-	module.exports = SubtractNode;
-
-	function SubtractNode(options){
-		options = options || {};
-		OperatorNode.call(this, options);
-	}
-	SubtractNode.prototype = Object.create(OperatorNode.prototype);
-	SubtractNode.prototype.constructor = SubtractNode;
-
-	Node.registerClass('subtract', SubtractNode);
-
-/***/ },
-/* 33 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var OperatorNode = __webpack_require__(30);
-	var Utils = __webpack_require__(10);
-
-	module.exports = DivideNode;
-
-	function DivideNode(options){
-		options = options || {};
-		OperatorNode.call(this, options);
-	}
-	DivideNode.prototype = Object.create(OperatorNode.prototype);
-	DivideNode.prototype.constructor = DivideNode;
-
-	Node.registerClass('divide', DivideNode);
-
-/***/ },
-/* 34 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var Utils = __webpack_require__(10);
-
-	module.exports = ReciprocalNode;
-
-	function ReciprocalNode(options){
+	function SmoothStepNode(options){
 		options = options || {};
 		Node.call(this, options);
 	}
-	ReciprocalNode.prototype = Object.create(Node.prototype);
-	ReciprocalNode.prototype.constructor = ReciprocalNode;
+	SmoothStepNode.prototype = Object.create(Node.prototype);
+	SmoothStepNode.prototype.constructor = SmoothStepNode;
 
-	Node.registerClass('reciprocal', ReciprocalNode);
+	Node.registerClass('smoothstep', SmoothStepNode);
 
-	ReciprocalNode.supportedTypes = [
+	SmoothStepNode.supportedTypes = [
 		'float',
 		'vec2',
 		'vec3',
 		'vec4'
 	];
 
-	ReciprocalNode.prototype.getInputPorts = function(key){
-		return ['x'];
+	SmoothStepNode.prototype.getInputPorts = function(key){
+		return ['a', 'b', 'x'];
 	};
 
-	ReciprocalNode.prototype.getOutputPorts = function(key){
-		return ['y'];
-	};
-
-	// Output type is same as what we get in.
-	ReciprocalNode.prototype.getOutputTypes = function(key){
-		var types = [];
-		if(key === 'y'){
-			types = this.inputPortIsConnected('x') ? this.getInputVariableTypes('x') : ['float'];
-		}
-		return types;
-	};
-
-	ReciprocalNode.prototype.getInputTypes = function(key){
-		return key === 'x' ? ReciprocalNode.supportedTypes : [];
-	};
-
-	ReciprocalNode.prototype.render = function(){
-		var outVarName = this.getOutputVariableNames('y')[0];
-		var outVarType = this.getOutputTypes('y')[0];
-
-		var inVarName = this.getInputVariableName('x');
-		var inVarType = this.getInputVariableTypes('x')[0];
-
-		if(outVarName && inVarName){
-			return outVarName + ' = ' + inVarType + '(1) / (' + Utils.convertGlslType(inVarName, inVarType, outVarType) + ');';
-		} else if(outVarName){
-			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outVarType) + ';';
-		} else {
-			return '';
-		}
-	};
-
-
-/***/ },
-/* 35 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Node = __webpack_require__(1);
-	var Utils = __webpack_require__(10);
-
-	module.exports = PowNode;
-
-	function PowNode(options){
-		options = options || {};
-		Node.call(this, options);
-	}
-	PowNode.prototype = Object.create(Node.prototype);
-	PowNode.prototype.constructor = PowNode;
-
-	Node.registerClass('pow', PowNode);
-
-	PowNode.supportedTypes = [
-		'float',
-		'vec2',
-		'vec3',
-		'vec4'
-	];
-
-	PowNode.prototype.getInputPorts = function(key){
-		return ['val', 'exp'];
-	};
-
-	PowNode.prototype.getOutputPorts = function(key){
+	SmoothStepNode.prototype.getOutputPorts = function(key){
 		return ['out'];
 	};
 
-	PowNode.prototype.getOutputTypes = function(key){
+	SmoothStepNode.prototype.getOutputTypes = function(key){
 		var types = [];
 		if(key === 'out'){
-			if(this.inputPortIsConnected('val') || this.inputPortIsConnected('exp')){
+			if(this.inputPortIsConnected('a') || this.inputPortIsConnected('b') || this.inputPortIsConnected('x')){
 				// Something is connected to the input - choose the vector type of largest dimension
 				types = [
 					Utils.getHighestDimensionVectorType(
-						this.getInputVariableTypes('val').concat(this.getInputVariableTypes('exp'))
+						this.getInputVariableTypes('a').concat(this.getInputVariableTypes('b')).concat(this.getInputVariableTypes('x'))
 					)
 				];
 			} else {
@@ -2163,22 +2475,510 @@
 		return types;
 	};
 
-	PowNode.prototype.getInputTypes = function(key){
-		return (key === 'val' || key === 'exp') ? PowNode.supportedTypes : [];
+	SmoothStepNode.prototype.getInputTypes = function(key){
+		return (key === 'a' || key === 'b' || key === 'x') ? SmoothStepNode.supportedTypes : [];
 	};
 
-	PowNode.prototype.render = function(){
-		var inVarNameA = this.getInputVariableName('val');
-		var inVarTypeA = this.getInputVariableTypes('val')[0];
+	SmoothStepNode.prototype.render = function(){
+		var inVarNameA = this.getInputVariableName('a');
+		var inVarTypeA = this.getInputVariableTypes('a')[0];
 
-		var inVarNameB = this.getInputVariableName('exp');
-		var inVarTypeB = this.getInputVariableTypes('exp')[0];
+		var inVarNameB = this.getInputVariableName('b');
+		var inVarTypeB = this.getInputVariableTypes('b')[0];
+
+		var inVarNameX = this.getInputVariableName('x');
+		var inVarTypeX = this.getInputVariableTypes('x')[0];
+
+		var outVarName = this.getOutputVariableNames('out')[0];
+		var outVarType = this.getOutputTypes('out')[0];
+
+		if(inVarNameA && inVarNameB  && inVarNameX && outVarName){
+			return outVarName + ' = smoothstep(' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + ',' + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType)+ ',' + Utils.convertGlslType(inVarNameX, inVarTypeX, outVarType) + ');';
+		} else if(outVarName){
+			var outType = this.getOutputTypes('out')[0];
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outType) + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 45 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = FracNode;
+
+	function FracNode(options){
+		options = options || {};
+		options.functionName = 'fract';
+		MathFunctionNode.call(this, options);
+	}
+	FracNode.prototype = Object.create(MathFunctionNode.prototype);
+	FracNode.prototype.constructor = FracNode;
+
+	Node.registerClass('frac', FracNode);
+
+/***/ },
+/* 46 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(12);
+
+	module.exports = IfNode;
+
+	function IfNode(options){
+		options = options || {};
+		Node.call(this, options);
+	}
+	IfNode.prototype = Object.create(Node.prototype);
+	IfNode.prototype.constructor = IfNode;
+
+	Node.registerClass('if', IfNode);
+
+	IfNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
+	IfNode.prototype.getInputPorts = function(key){
+		return ['a', 'b', 'a<b', 'a=b', 'a>b'];
+	};
+
+	IfNode.prototype.getOutputPorts = function(key){
+		return ['out'];
+	};
+
+	IfNode.prototype.getOutputTypes = function(key){
+		var types = [];
+		if(key === 'out'){
+			if(this.anyInputPortIsConnected()){
+				// Something is connected to the input - choose the vector type of largest dimension
+				types = [
+					Utils.getHighestDimensionVectorType(
+						this.getInputVariableTypes('a')
+							.concat(this.getInputVariableTypes('b'))
+							.concat(this.getInputVariableTypes('a<b'))
+							.concat(this.getInputVariableTypes('a=b'))
+							.concat(this.getInputVariableTypes('a>b'))
+					)
+				];
+			} else {
+				// Nothing connected - use default float type
+				types = ['float'];
+			}
+		}
+		return types;
+	};
+
+	IfNode.prototype.getInputTypes = function(key){
+		return this.getInputPorts().indexOf(key) !== -1 ? IfNode.supportedTypes : [];
+	};
+
+	IfNode.prototype.render = function(){
+		var inVarNameA = this.getInputVariableName('a');
+		var inVarTypeA = this.getInputVariableTypes('a')[0];
+
+		var inVarNameB = this.getInputVariableName('b');
+		var inVarTypeB = this.getInputVariableTypes('b')[0];
+
+		var inVarNameLess = this.getInputVariableName('a<b');
+		var inVarTypeLess = this.getInputVariableTypes('a<b')[0];
+
+		var inVarNameEqual = this.getInputVariableName('a=b');
+		var inVarTypeEqual = this.getInputVariableTypes('a=b')[0];
+
+		var inVarNameLarger = this.getInputVariableName('a>b');
+		var inVarTypeLarger = this.getInputVariableTypes('a>b')[0];
+
+		var outVarName = this.getOutputVariableNames('out')[0];
+		var outVarType = this.getOutputTypes('out')[0];
+
+		// TODO: compare components one by one
+		if(inVarNameA && inVarNameB && inVarNameEqual && inVarNameLess && inVarNameLarger && outVarName){
+			return (
+				'if(' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + '<' + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType) + '){' +
+					outVarName + '=' + inVarNameLess + ';' +
+				'}else if(' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + '>' + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType) + '){' +
+					outVarName + '=' + inVarNameLarger + ';' +
+				'}else{' +
+					outVarName + '=' + inVarNameEqual + ';' +
+				'}'
+			);
+		} else if(outVarName){
+			var outType = this.getOutputTypes('out')[0];
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outType) + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 47 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var OperatorNode = __webpack_require__(20);
+	var Utils = __webpack_require__(12);
+
+	module.exports = ModNode;
+
+	function ModNode(options){
+		options = options || {};
+		options.functionName = 'mod';
+		OperatorNode.call(this, options);
+	}
+	ModNode.prototype = Object.create(OperatorNode.prototype);
+	ModNode.prototype.constructor = ModNode;
+
+	Node.registerClass('mod', ModNode);
+
+	ModNode.prototype.render = function(){
+		var inVarNameA = this.getInputVariableName('a');
+		var inVarTypeA = this.getInputVariableTypes('a')[0];
+
+		var inVarNameB = this.getInputVariableName('b');
+		var inVarTypeB = this.getInputVariableTypes('b')[0];
 
 		var outVarName = this.getOutputVariableNames('out')[0];
 		var outVarType = this.getOutputTypes('out')[0];
 
 		if(inVarNameA && inVarNameB && outVarName){
-			return outVarName + ' = pow(' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + ',' + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType) + ');';
+			return outVarName + ' = mod(' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + ',' + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType) + ');';
+		} else if(outVarName){
+			var outType = this.getOutputTypes('out')[0];
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outType) + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 48 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(12);
+
+	module.exports = ClampNode;
+
+	function ClampNode(options){
+		options = options || {};
+		Node.call(this, options);
+	}
+	ClampNode.prototype = Object.create(Node.prototype);
+	ClampNode.prototype.constructor = ClampNode;
+
+	Node.registerClass('clamp', ClampNode);
+
+	ClampNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
+	ClampNode.prototype.getInputPorts = function(key){
+		return ['min', 'max', 'x'];
+	};
+
+	ClampNode.prototype.getOutputPorts = function(key){
+		return ['out'];
+	};
+
+	ClampNode.prototype.getOutputTypes = function(key){
+		var types = [];
+		if(key === 'out'){
+			if(this.anyInputPortIsConnected()){
+				// Something is connected to the input - choose the vector type of largest dimension
+				types = [
+					Utils.getHighestDimensionVectorType(
+						this.getInputVariableTypes('min')
+							.concat(this.getInputVariableTypes('max'))
+							.concat(this.getInputVariableTypes('x'))
+					)
+				];
+			} else {
+				// Nothing connected - use default float type
+				types = ['float'];
+			}
+		}
+		return types;
+	};
+
+	ClampNode.prototype.getInputTypes = function(key){
+		return this.getInputPorts().indexOf(key) !== -1 ? ClampNode.supportedTypes : [];
+	};
+
+	ClampNode.prototype.render = function(){
+		var inVarNameA = this.getInputVariableName('min');
+		var inVarTypeA = this.getInputVariableTypes('min')[0];
+
+		var inVarNameB = this.getInputVariableName('max');
+		var inVarTypeB = this.getInputVariableTypes('max')[0];
+
+		var inVarNameX = this.getInputVariableName('x');
+		var inVarTypeX = this.getInputVariableTypes('x')[0];
+
+		var outVarName = this.getOutputVariableNames('out')[0];
+		var outVarType = this.getOutputTypes('out')[0];
+
+		if(inVarNameA && inVarNameB  && inVarNameX && outVarName){
+			return outVarName + ' = clamp(' + Utils.convertGlslType(inVarNameX, inVarTypeX, outVarType) + ',' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + ',' + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType) + ');';
+		} else if(outVarName){
+			var outType = this.getOutputTypes('out')[0];
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outType) + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 49 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(12);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = Clamp01Node;
+
+	function Clamp01Node(options){
+		options = options || {};
+		MathFunctionNode.call(this, options);
+	}
+	Clamp01Node.prototype = Object.create(MathFunctionNode.prototype);
+	Clamp01Node.prototype.constructor = Clamp01Node;
+
+	Node.registerClass('clamp01', Clamp01Node);
+
+	Clamp01Node.prototype.render = function(){
+		var outVarName = this.getOutputVariableNames('y')[0];
+		var outVarType = this.getOutputTypes('y')[0];
+
+		var inVarName = this.getInputVariableName('x');
+		var inVarType = this.getInputVariableTypes('x')[0];
+
+		if(outVarName && inVarName){
+			return outVarName + ' = clamp(' + Utils.convertGlslType(inVarName, inVarType, outVarType) + ', 0.0, 1.0);';
+		} else if(outVarName){
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outVarType) + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 50 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(12);
+
+	module.exports = MixNode;
+
+	function MixNode(options){
+		options = options || {};
+		Node.call(this, options);
+	}
+	MixNode.prototype = Object.create(Node.prototype);
+	MixNode.prototype.constructor = MixNode;
+
+	Node.registerClass('mix', MixNode);
+
+	MixNode.supportedTypes = [
+		'float',
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
+	MixNode.prototype.getInputPorts = function(key){
+		return ['a', 'b', 't'];
+	};
+
+	MixNode.prototype.getOutputPorts = function(key){
+		return ['out'];
+	};
+
+	MixNode.prototype.getOutputTypes = function(key){
+		var types = [];
+		if(key === 'out'){
+			if(this.anyInputPortIsConnected()){
+				// Something is connected to the input - choose the vector type of largest dimension
+				types = [
+					Utils.getHighestDimensionVectorType(
+						this.getInputVariableTypes('a')
+							.concat(this.getInputVariableTypes('b'))
+							.concat(this.getInputVariableTypes('t'))
+					)
+				];
+			} else {
+				// Nothing connected - use default float type
+				types = ['float'];
+			}
+		}
+		return types;
+	};
+
+	MixNode.prototype.getInputTypes = function(key){
+		return this.getInputPorts().indexOf(key) !== -1 ? MixNode.supportedTypes : [];
+	};
+
+	MixNode.prototype.render = function(){
+		var inVarNameA = this.getInputVariableName('a');
+		var inVarTypeA = this.getInputVariableTypes('a')[0];
+
+		var inVarNameB = this.getInputVariableName('b');
+		var inVarTypeB = this.getInputVariableTypes('b')[0];
+
+		var inVarNameX = this.getInputVariableName('t');
+		var inVarTypeX = this.getInputVariableTypes('t')[0];
+
+		var outVarName = this.getOutputVariableNames('out')[0];
+		var outVarType = this.getOutputTypes('out')[0];
+
+		if(inVarNameA && inVarNameB  && inVarNameX && outVarName){
+			return outVarName + ' = mix(' + Utils.convertGlslType(inVarNameA, inVarTypeA, outVarType) + ',' + Utils.convertGlslType(inVarNameB, inVarTypeB, outVarType) + ',' + Utils.convertGlslType(inVarNameX, inVarTypeX, outVarType) + ');';
+		} else if(outVarName){
+			var outType = this.getOutputTypes('out')[0];
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outType) + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 51 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var MathFunctionNode = __webpack_require__(25);
+
+	module.exports = NormalizeNode;
+
+	function NormalizeNode(options){
+		options = options || {};
+		options.functionName = 'normalize';
+		MathFunctionNode.call(this, options);
+	}
+	NormalizeNode.prototype = Object.create(MathFunctionNode.prototype);
+	NormalizeNode.prototype.constructor = NormalizeNode;
+
+	Node.registerClass('normalize', NormalizeNode);
+
+/***/ },
+/* 52 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var Utils = __webpack_require__(12);
+
+	module.exports = ComponentMaskNode;
+
+	function ComponentMaskNode(options){
+		options = options || {};
+		this.channel = options.channel || ComponentMaskNode.CHANNEL_R;
+		Node.call(this, options);
+	}
+	ComponentMaskNode.prototype = Object.create(Node.prototype);
+	ComponentMaskNode.prototype.constructor = ComponentMaskNode;
+
+	Node.registerClass('componentMask', ComponentMaskNode);
+
+	ComponentMaskNode.CHANNEL_R = 'r';
+	ComponentMaskNode.CHANNEL_G = 'g';
+	ComponentMaskNode.CHANNEL_B = 'b';
+	ComponentMaskNode.CHANNEL_A = 'a';
+
+	ComponentMaskNode.supportedTypes = [
+		'vec2',
+		'vec3',
+		'vec4'
+	];
+
+	ComponentMaskNode.prototype.getInputPorts = function(key){
+		return ['x'];
+	};
+
+	ComponentMaskNode.prototype.getOutputPorts = function(key){
+		return ['y'];
+	};
+
+	// Output type is always one channel: float
+	ComponentMaskNode.prototype.getOutputTypes = function(key){
+		return ['float'];
+	};
+
+	ComponentMaskNode.prototype.getInputTypes = function(key){
+		return key === 'x' ? ComponentMaskNode.supportedTypes : [];
+	};
+
+	ComponentMaskNode.prototype.render = function(){
+		var outVarName = this.getOutputVariableNames('y')[0];
+		var outVarType = this.getOutputTypes('y')[0];
+
+		var inVarName = this.getInputVariableName('x');
+		var inVarType = this.getInputVariableTypes('x')[0];
+
+		if(outVarName && inVarName){
+			return outVarName + '=(' + inVarName + ').' + this.channel + ';';
+		} else if(outVarName){
+			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outVarType) + ';';
+		} else {
+			return '';
+		}
+	};
+
+
+/***/ },
+/* 53 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Node = __webpack_require__(1);
+	var OperatorNode = __webpack_require__(20);
+	var Utils = __webpack_require__(12);
+
+	module.exports = DistanceNode;
+
+	function DistanceNode(options){
+		options = options || {};
+		options.functionName = 'distance';
+		OperatorNode.call(this, options);
+	}
+	DistanceNode.prototype = Object.create(OperatorNode.prototype);
+	DistanceNode.prototype.constructor = DistanceNode;
+
+	Node.registerClass('distance', DistanceNode);
+
+	// Output type is always float
+	DistanceNode.prototype.getOutputTypes = function(key){
+		return key === 'out' ? ['float'] : [];
+	};
+
+	DistanceNode.prototype.render = function(){
+		var inVarNameA = this.getInputVariableName('a');
+		var inVarTypeA = this.getInputVariableTypes('a')[0];
+
+		var inVarNameB = this.getInputVariableName('b');
+		var inVarTypeB = this.getInputVariableTypes('b')[0];
+
+		var outVarName = this.getOutputVariableNames('out')[0];
+		var outVarType = this.getOutputTypes('out')[0];
+
+		if(inVarNameA && inVarNameB && outVarName){
+			return outVarName + ' = distance(' + inVarNameA + ',' + inVarNameB + ');';
 		} else if(outVarName){
 			var outType = this.getOutputTypes('out')[0];
 			return outVarName + ' = ' + Utils.convertGlslType('0.0', 'float', outType) + ';';

@@ -58,6 +58,12 @@ Node.prototype.inputPortIsConnected = function(key){
 	return this.graph.inputPortIsConnected(this, key);
 };
 
+Node.prototype.anyInputPortIsConnected = function(){
+	return this.getInputPorts().some(function(key){
+		return this.graph.inputPortIsConnected(this, key);
+	}, this);
+};
+
 Node.prototype.getOutputVariableNames = function(key){
 	return this.outputPortIsConnected(key) ? [key + this.id] : []; // todo really an array?
 };

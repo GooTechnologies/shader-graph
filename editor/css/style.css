@@ -7,6 +7,10 @@ body {
   height: 100%;
 }
 
+.list-group-item {
+    padding: 3px 9px;
+}
+
 .node-type-vec2 input {
   width: 50px;
 }

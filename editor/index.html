@@ -103,11 +103,19 @@
                         var v = parseFloat(nodeData.value);
                         node.value = isNaN(v) ? 0 : v;
                         break;
+                    case 'vec2':
+                    case 'vec3':
+                    case 'vec4':
+                        node.value = nodeData.value.map(function(comp){
+                            var v = parseFloat(comp);
+                            return isNaN(v) ? 0 : v;
+                        });
+                        break;
                     }
                 }, this);
 
                 // Connections
-                this.state.connections.forEach(function (conn){
+                this.state.connections.slice(0).forEach(function (conn){
                     var nA = this.shader.fragmentGraph.getNodeById(conn.nodeA);
                     var nB = this.shader.fragmentGraph.getNodeById(conn.nodeB);
                     if(!nA) console.warn('couldnt find node ' + conn.nodeA);
@@ -115,6 +123,9 @@
 
                     if(!nB.canConnect(conn.inputB, nA, conn.outputA)){
                         console.warn(nB.errorMessage);
+
+                        // If it cannot be rebuilt we may as well remove it from the datamodel
+                        this.disconnect(conn.nodeA, conn.outputA, conn.nodeB, conn.inputB);
                         return false;
                     }
                     nB.connect(conn.inputB, nA, conn.outputA);
@@ -165,13 +176,22 @@
                 case 'value':
                     data.value = 0;
                     break;
+                case 'vec2':
+                    data.value = [0,0];
+                    break;
+                case 'vec3':
+                    data.value = [0,0,0];
+                    break;
+                case 'vec4':
+                    data.value = [0,0,0,1];
+                    break;
                 }
                 this.setState(state);
                 return node.id;
             },
             removeNode: function(id){
                 var state = this.state;
-                
+
                 var nodeToRemove = state.nodes.find(function(node){
                     return node.id === id;
                 });
@@ -370,11 +390,10 @@
                 }
 
                 instance.bind("click", function (c) {
-                    console.log('CLICK')
                     if(!ignoreConnectionEvents){
                         var info = getConnectionInfo(c);
                         component.props.disconnect(info.nodeA, info.outputA, info.nodeB, info.inputB);
-                        instance.detach(c);
+                        //instance.detach(c);
                     }
                 });
 
@@ -390,8 +409,9 @@
 
                     if(!ignoreConnectionEvents && !component.props.connect(nodeA, outputA, nodeB, inputB)){
                     }
-                    return false;
                 });
+
+                console.log('Mount node editor')
 
                 // suspend drawing and initialize.
                 instance.batch(function () {
@@ -474,9 +494,6 @@
                 var shader = this.props.updateShader();
                 var node = shader.fragmentGraph.getNodeById(this.props.data.id);
                 var inputs = node ? node.getInputPorts().map(function(key){
-                    // return (
-                    //     <div className="in" key={key} id={key + this.props.data.id}>{key}</div>
-                    // );
                     return (
                         <Port
                             type={"in"}
@@ -487,9 +504,6 @@
                     );
                 }, this) : undefined;
                 var outputs = node ? node.getOutputPorts().map(function(key){
-                    // return (
-                    //     <div className="out" key={key} id={key + this.props.data.id}>{key}</div>
-                    // );
                     return (
                         <Port
                             type={"out"}
@@ -504,8 +518,75 @@
                     <span className="glyphicon glyphicon-remove remove-button pull-right" onClick={this.handleClickRemove}></span>
                 ) : undefined;
 
+                var extra;
+
+                switch(this.props.data.type){
+                case 'value':
+                    extra = (
+                        <input
+                            type="number"
+                            value={this.props.data.value}
+                            onChange={this.onChangeValue} />
+                    );
+                    break;
+                case 'vec2':
+                    extra = (
+                        <div>
+                            <input
+                                type="number"
+                                value={this.props.data.value[0]}
+                                onChange={this.onChangeVec2Value} />
+                            <input
+                                type="number"
+                                value={this.props.data.value[1]}
+                                onChange={this.onChangeVec2Value} />
+                        </div>
+                    );
+                    break;
+                case 'vec3':
+                    extra = (
+                        <div>
+                            <input
+                                type="number"
+                                value={this.props.data.value[0]}
+                                onChange={this.onChangeVec3Value} />
+                            <input
+                                type="number"
+                                value={this.props.data.value[1]}
+                                onChange={this.onChangeVec3Value} />
+                            <input
+                                type="number"
+                                value={this.props.data.value[2]}
+                                onChange={this.onChangeVec3Value} />
+                        </div>
+                    );
+                    break;
+                case 'vec4':
+                    extra = (
+                        <div>
+                            <input
+                                type="number"
+                                value={this.props.data.value[0]}
+                                onChange={this.onChangeVec4Value} />
+                            <input
+                                type="number"
+                                value={this.props.data.value[1]}
+                                onChange={this.onChangeVec4Value} />
+                            <input
+                                type="number"
+                                value={this.props.data.value[2]}
+                                onChange={this.onChangeVec4Value} />
+                            <input
+                                type="number"
+                                value={this.props.data.value[3]}
+                                onChange={this.onChangeVec4Value} />
+                        </div>
+                    );
+                    break;
+                };
+
                 return (
-                    <div className="w" data-node-id={this.props.data.id}>
+                    <div className={"w node-type-" + this.props.data.type} data-node-id={this.props.data.id}>
                         <div className="title">
                             {this.props.data.type}
                             {removeButton}
@@ -516,22 +597,40 @@
                         <div className="outputs">
                             {outputs}
                         </div>
-                        {
-                            {
-                                value: (
-                                    <input
-                                        type="number"
-                                        value={this.props.data.value}
-                                        onChange={this.onChangeValue}/>
-                                )
-                            }[this.props.data.type]
-                        }
+                        {extra}
                     </div>
                 );
             },
             onChangeValue: function(evt){
                 this.props.updateNodeData(this.props.data.id, {
                     value: evt.target.value
+                })
+            },
+            onChangeVec2Value: function(evt){
+                this.props.updateNodeData(this.props.data.id, {
+                    value: [
+                        evt.target.parentNode.childNodes[0].value,
+                        evt.target.parentNode.childNodes[1].value
+                    ]
+                })
+            },
+            onChangeVec3Value: function(evt){
+                this.props.updateNodeData(this.props.data.id, {
+                    value: [
+                        evt.target.parentNode.childNodes[0].value,
+                        evt.target.parentNode.childNodes[1].value,
+                        evt.target.parentNode.childNodes[2].value
+                    ]
+                })
+            },
+            onChangeVec4Value: function(evt){
+                this.props.updateNodeData(this.props.data.id, {
+                    value: [
+                        evt.target.parentNode.childNodes[0].value,
+                        evt.target.parentNode.childNodes[1].value,
+                        evt.target.parentNode.childNodes[2].value,
+                        evt.target.parentNode.childNodes[3].value
+                    ]
                 })
             },
             handleClickRemove: function(){

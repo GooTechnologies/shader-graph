@@ -1,5 +1,4 @@
 var Node = require('./Node');
-var Uniform = require('../Uniform');
 
 module.exports = Vector4Node;
 
@@ -7,7 +6,7 @@ module.exports = Vector4Node;
 function Vector4Node(options){
 	options = options || {};
 	Node.call(this, options);
-	this.defaultValue = options.defaultValue ? options.defaultValue.slice(0) : [0,0,0,0];
+	this.value = options.value ? options.value.slice(0) : [0,0,0,0];
 }
 Vector4Node.prototype = Object.create(Node.prototype);
 Vector4Node.prototype.constructor = Vector4Node;
@@ -15,22 +14,11 @@ Vector4Node.prototype.constructor = Vector4Node;
 Node.registerClass('vec4', Vector4Node);
 
 Vector4Node.prototype.getInputPorts = function(){
-	return ['r', 'g', 'b', 'a'];
+	return [];
 };
 
 Vector4Node.prototype.getOutputPorts = function(){
 	return ['rgba'];
-};
-
-Vector4Node.prototype.getInputTypes = function(key){
-	var types;
-	switch(key){
-	case 'r': types = ['float']; break;
-	case 'g': types = ['float']; break;
-	case 'b': types = ['float']; break;
-	case 'a': types = ['float']; break;
-	}
-	return types;
 };
 
 Vector4Node.prototype.getOutputTypes = function(key){
@@ -38,10 +26,6 @@ Vector4Node.prototype.getOutputTypes = function(key){
 };
 
 Vector4Node.prototype.render = function(){
-	var r = this.getInputVariableName('r') || "0";
-	var g = this.getInputVariableName('g') || "0";
-	var b = this.getInputVariableName('b') || "0";
-	var a = this.getInputVariableName('a') || "1";
 	var outVarName = this.getOutputVariableNames('rgba')[0];
-	return outVarName ? outVarName + ' = vec4(' + r + ',' + g + ',' + b + ',' + a + ');' : '';
+	return outVarName ? outVarName + ' = vec4(' + this.value.join(',') + ');' : '';
 };

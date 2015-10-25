@@ -1,5 +1,4 @@
 var Node = require('./Node');
-var Uniform = require('../Uniform');
 var Utils = require('../Utils');
 
 module.exports = ValueNode;

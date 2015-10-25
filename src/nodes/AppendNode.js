@@ -21,22 +21,22 @@ AppendNode.supportedTypes = [
 ];
 
 AppendNode.prototype.getInputPorts = function(){
-	var sum = this.getComponentSum();
+	// var sum = this.getComponentSum();
 
-	var a = this.inputPortIsConnected('a');
-	var b = this.inputPortIsConnected('b');
-	var c = this.inputPortIsConnected('c');
-	var d = this.inputPortIsConnected('d');
+	// var a = this.inputPortIsConnected('a');
+	// var b = this.inputPortIsConnected('b');
+	// var c = this.inputPortIsConnected('c');
+	// var d = this.inputPortIsConnected('d');
 
-	if(!a && !b && !c && !d)
-		return ['a'];
-	else if(a && !b && !c && !d && sum < 4)
-		return ['a', 'b'];
-	else if(a && b && !c && !d && sum < 4)
-		return ['a', 'b', 'c'];
-	else if(a && b && c && !d && sum < 4)
-		return ['a', 'b', 'c', 'd'];
-	else 
+	// if(!a && !b && !c && !d)
+	// 	return ['a'];
+	// else if(a && !b && !c && !d && sum < 4)
+	// 	return ['a', 'b'];
+	// else if(a && b && !c && !d && sum < 4)
+	// 	return ['a', 'b', 'c'];
+	// else if(a && b && c && !d && sum < 4)
+	// 	return ['a', 'b', 'c', 'd'];
+	// else
 		return ['a', 'b', 'c', 'd'];
 };
 
@@ -69,7 +69,7 @@ AppendNode.prototype.getComponentSum = function(){
 	for(var i=0; i<ports.length; i++){
 		var x = ports[i];
 		if(this.inputPortIsConnected(x)){
-			var type = this.getInputTypes(x)[0];
+			var type = this.getInputVariableTypes(x)[0];
 			sum += weights[type];
 		}
 	}

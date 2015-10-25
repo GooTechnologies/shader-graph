@@ -24,6 +24,7 @@ module.exports = {
 	MinNode: require('./src/nodes/MinNode'),
 	MixNode: require('./src/nodes/MixNode'),
 	ModNode: require('./src/nodes/ModNode'),
+	LengthNode: require('./src/nodes/LengthNode'),
 	MultiplyNode: require('./src/nodes/MultiplyNode'),
 	Node: require('./src/nodes/Node'),
 	NormalizeNode: require('./src/nodes/NormalizeNode'),

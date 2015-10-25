@@ -1585,6 +1585,7 @@
 
 	function MultiplyNode(options){
 		options = options || {};
+		this.operator = '*';
 		OperatorNode.call(this, options);
 	}
 	MultiplyNode.prototype = Object.create(OperatorNode.prototype);

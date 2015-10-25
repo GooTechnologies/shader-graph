@@ -6,7 +6,7 @@ module.exports = SubtractNode;
 
 function SubtractNode(options){
 	options = options || {};
-	this.operator = '-';
+	options.operator = '-';
 	OperatorNode.call(this, options);
 }
 SubtractNode.prototype = Object.create(OperatorNode.prototype);

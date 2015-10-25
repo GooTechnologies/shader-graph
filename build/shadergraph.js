@@ -1525,7 +1525,7 @@
 
 	function AddNode(options){
 		options = options || {};
-		this.operator = '+';
+		options.operator = '+';
 		OperatorNode.call(this, options);
 	}
 	AddNode.prototype = Object.create(OperatorNode.prototype);
@@ -1545,7 +1545,7 @@
 
 	function DivideNode(options){
 		options = options || {};
-		this.operator = '/';
+		options.operator = '/';
 		OperatorNode.call(this, options);
 	}
 	DivideNode.prototype = Object.create(OperatorNode.prototype);
@@ -1565,7 +1565,7 @@
 
 	function SubtractNode(options){
 		options = options || {};
-		this.operator = '-';
+		options.operator = '-';
 		OperatorNode.call(this, options);
 	}
 	SubtractNode.prototype = Object.create(OperatorNode.prototype);
@@ -1585,7 +1585,7 @@
 
 	function MultiplyNode(options){
 		options = options || {};
-		this.operator = '*';
+		options.operator = '*';
 		OperatorNode.call(this, options);
 	}
 	MultiplyNode.prototype = Object.create(OperatorNode.prototype);

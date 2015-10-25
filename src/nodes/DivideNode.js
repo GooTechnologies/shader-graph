@@ -6,7 +6,7 @@ module.exports = DivideNode;
 
 function DivideNode(options){
 	options = options || {};
-	this.operator = '/';
+	options.operator = '/';
 	OperatorNode.call(this, options);
 }
 DivideNode.prototype = Object.create(OperatorNode.prototype);

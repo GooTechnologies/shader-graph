@@ -6,6 +6,7 @@ module.exports = AddNode;
 
 function AddNode(options){
 	options = options || {};
+	this.operator = '+';
 	OperatorNode.call(this, options);
 }
 AddNode.prototype = Object.create(OperatorNode.prototype);

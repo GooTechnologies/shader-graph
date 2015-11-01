@@ -44,8 +44,15 @@ var expressionTable = {
 		'vec3': 'X.xyz',
 		'vec4': 'X'
 	}
-}
+};
 
+/**
+ * Manually cast a GLSL type to another one. For example, a float can be casted to a vec3: convertGlslType('myFloatVar', 'float', 'vec3') => 'vec3(myFloatVar)'
+ * @param  {string} expression
+ * @param  {string} type
+ * @param  {string} newType
+ * @return {string}
+ */
 Utils.convertGlslType = function(expression, type, newType){
 	return expressionTable[type][newType].replace('X', expression);
 };

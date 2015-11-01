@@ -97,6 +97,7 @@ Node.prototype._getConnectError = function(key, targetNode, targetPortKey){
 	if(targetNode === this){
 		return 'Cannot connect the node to itself';
 	}
+
 	if(this.getInputPorts().indexOf(key) === -1){
 		return this.name + ' does not have input port ' + key;
 	}

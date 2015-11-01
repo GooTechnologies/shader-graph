@@ -37,7 +37,7 @@ AppendNode.prototype.getInputPorts = function(){
 	// else if(a && b && c && !d && sum < 4)
 	// 	return ['a', 'b', 'c', 'd'];
 	// else
-		return ['a', 'b', 'c', 'd'];
+	return ['a', 'b', 'c', 'd'];
 };
 
 AppendNode.prototype.getOutputPorts = function(){

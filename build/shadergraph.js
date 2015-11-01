@@ -211,6 +211,7 @@
 		if(targetNode === this){
 			return 'Cannot connect the node to itself';
 		}
+
 		if(this.getInputPorts().indexOf(key) === -1){
 			return this.name + ' does not have input port ' + key;
 		}
@@ -322,7 +323,34 @@
 		this.fromPortKey = options.fromPortKey || null;
 		this.toNode = options.toNode || null;
 		this.toPortKey = options.toPortKey || null;
+		this.graph = options.graph || null;
 	}
+
+	/**
+	 * Check if the connection is still valid. The connection can become invalid if some upstream dependency types change.
+	 * @return {Boolean}
+	 */
+	Connection.prototype.isValid = function(){
+		var fromNode = this.fromNode;
+		var toNode = this.toNode;
+		var toPortKey = this.toPortKey;
+		var fromPortKey = this.fromPortKey;
+
+		if(!this.graph) return false;
+		if(this.fromNode === this.toNode) return false;
+		if(toNode.getInputPorts().indexOf(this.toPortKey) === -1) return false;
+		if(fromNode.getInputPorts().indexOf(this.fromPortKey) === -1) return false;
+
+		// Check if they have a type in common
+		var outputTypes = fromNode.getOutputTypes(fromPortKey);
+		var inputTypes = toNode.getInputTypes(toPortKey);
+		var hasSharedType = outputTypes.some(function(type){
+			return inputTypes.indexOf(type) !== -1;
+		});
+		if(!outputTypes.length || !inputTypes.length || !hasSharedType) return false;
+		if(fromNode.getOutputPorts().indexOf(fromPortKey) === -1) return false;
+		return true;
+	};
 
 /***/ },
 /* 3 */
@@ -1028,8 +1056,15 @@
 			'vec3': 'X.xyz',
 			'vec4': 'X'
 		}
-	}
+	};
 
+	/**
+	 * Manually cast a GLSL type to another one. For example, a float can be casted to a vec3: convertGlslType('myFloatVar', 'float', 'vec3') => 'vec3(myFloatVar)'
+	 * @param  {string} expression
+	 * @param  {string} type
+	 * @param  {string} newType
+	 * @return {string}
+	 */
 	Utils.convertGlslType = function(expression, type, newType){
 		return expressionTable[type][newType].replace('X', expression);
 	};
@@ -1311,7 +1346,7 @@
 		// else if(a && b && c && !d && sum < 4)
 		// 	return ['a', 'b', 'c', 'd'];
 		// else
-			return ['a', 'b', 'c', 'd'];
+		return ['a', 'b', 'c', 'd'];
 	};
 
 	AppendNode.prototype.getOutputPorts = function(){
@@ -2023,6 +2058,7 @@
 			return conn.toNode === node && conn.toPortKey === inputPort;
 		});
 	};
+
 	Graph.prototype.outputPortIsConnected = function(node, outputPort){
 		return this.connections.some(function (conn){
 			return conn.fromNode === node && conn.fromPortKey === outputPort;

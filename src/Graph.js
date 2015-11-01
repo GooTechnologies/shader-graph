@@ -54,6 +54,7 @@ Graph.prototype.inputPortIsConnected = function(node, inputPort){
 		return conn.toNode === node && conn.toPortKey === inputPort;
 	});
 };
+
 Graph.prototype.outputPortIsConnected = function(node, outputPort){
 	return this.connections.some(function (conn){
 		return conn.fromNode === node && conn.fromPortKey === outputPort;

@@ -252,25 +252,47 @@
                 return true;
             },
             disconnect: function(nodeA, outputA, nodeB, inputB){
-              var state = this.state;
-              var connToRemove = state.connections.find(function(conn){
-                return (
-                    conn.nodeA === nodeA &&
-                    conn.nodeB === nodeB &&
-                    conn.outputA === outputA &&
-                    conn.inputB === inputB
-                );
-              });
+                var state = this.state;
+                var connToRemove = state.connections.find(function(conn){
+                    return (
+                        conn.nodeA === nodeA &&
+                        conn.nodeB === nodeB &&
+                        conn.outputA === outputA &&
+                        conn.inputB === inputB
+                    );
+                });
                 var idx = state.connections.indexOf(connToRemove);
                 if(idx !== -1){
                     state.connections.splice(idx, 1);
                 }
 
-                // var nA = this.shader.fragmentGraph.getNodeById(nodeA);
-                // var nB = this.shader.fragmentGraph.getNodeById(nodeB);
-                // nB.disconnect(inputB, nA, outputA);
+                // Test it!
+                var nA = this.shader.fragmentGraph.getNodeById(nodeA);
+                var nB = this.shader.fragmentGraph.getNodeById(nodeB);
+                nB.disconnect(inputB, nA, outputA);
 
-              this.setState(state);
+                // Delete any other invalid connections
+                /*
+                var invalidConnections = this.shader.fragmentGraph.connections.filter(function(conn){
+                    return !conn.isValid();
+                }).forEach(function(conn){
+                    console.log('removing', conn)
+                    var connToRemove = state.connections.find(function(connData){
+                        return (
+                            connData.nodeA === conn.fromNode &&
+                            connData.nodeB === conn.toNode &&
+                            connData.outputA === conn.fromPortKey &&
+                            connData.inputB === conn.toPortKey
+                        );
+                    });
+                    var idx = state.connections.indexOf(connToRemove);
+                    if(idx !== -1){
+                        state.connections.splice(idx, 1);
+                    }
+                });
+                */
+
+                this.setState(state);
             }
           });
 

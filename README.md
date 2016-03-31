@@ -1,6 +1,6 @@
 # Goo Shader Graph
 
-API for constructing shaders.
+API (and experimental editor) for constructing shaders for Goo Engine.
 
 ## new Graph(options)
 
